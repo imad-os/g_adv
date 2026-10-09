@@ -1,0 +1,21 @@
+html, body { margin: 0; height: 100%; background: #0a0f2c; overflow: hidden; }
+body { font-family: Arial, "Segoe UI", Tahoma, sans-serif; color: #fff; }
+
+/* The whole UI is laid out on a fixed 1920x1080 stage, scaled to the window by game.js. */
+#stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+#c { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; display: block; }
+
+/* Nothing important within 5% of the edges (96px / 54px). */
+#hud { position: absolute; left: 96px; right: 96px; top: 54px; display: flex; justify-content: space-between;
+       font-weight: 700; font-size: 48px; text-shadow: 0 4px 0 #000; pointer-events: none; direction: ltr; }
+
+.screen { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+          background: rgba(10, 15, 44, 0.86); }
+.screen.hidden { display: none; }
+#title { margin: 0 0 64px; font-size: 110px; font-weight: 800; color: #ffd23f; text-shadow: 0 8px 0 #000; }
+#items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 28px; min-width: 640px; }
+#items li { font-size: 56px; font-weight: 700; text-align: center; padding: 22px 48px; border-radius: 22px;
+            background: #1b2459; border: 8px solid transparent; transition: transform 0.12s; }
+/* Focus must be obvious from 3 m: thick bright outline and a scale-up. */
+#items li.focus { background: #2c3a8c; border-color: #ffd23f; transform: scale(1.08); color: #ffd23f; }
+#hint { margin: 64px 0 0; font-size: 40px; color: #c8d0ff; }

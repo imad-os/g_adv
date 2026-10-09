@@ -1,0 +1,12 @@
+{
+  "mypc": 1,
+  "id": "g-adv",
+  "name": "Advanced Game",
+  "description": "An advanced game for My PC",
+  "type": "game",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "version": "0.1.0",
+  "scores": true,
+  "config": { "speed": 1 }
+}
