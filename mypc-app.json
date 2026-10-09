@@ -6,7 +6,7 @@
   "type": "game",
   "entry": "index.html",
   "icon": "icon.svg",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "scores": true,
-  "config": { "speed": 1 }
+  "config": { "speed": 1, "lang": "" }
 }

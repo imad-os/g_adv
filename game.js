@@ -108,7 +108,13 @@
     MyPC.init({
         ownMenu: true,
         onInit: function (info) {
-            t = window.TEXT[info.lang] || window.TEXT.en;
+            // The owner can force a language in the app config, e.g. { "lang": "ary" } for Moroccan Darija.
+            var lang = window.TEXT[MyPC.app_config.lang] ? MyPC.app_config.lang : info.lang;
+            t = window.TEXT[lang] || window.TEXT.en;
+            if (window.TEXT[lang]) {
+                document.documentElement.setAttribute('lang', lang);
+                document.documentElement.setAttribute('dir', window.RTL[lang] ? 'rtl' : 'ltr');
+            }
             tier = (info.quality && info.quality.tier) || 'mid';
             sfxVol = info.volume ? info.volume.sfx : 0.8;
             speedMul = +MyPC.app_config.speed > 0 ? +MyPC.app_config.speed : 1;
