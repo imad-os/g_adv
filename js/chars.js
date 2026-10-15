@@ -29,9 +29,9 @@
         g.userData = { legL: legL, legR: legR, armL: armL, armR: armR, hand: hand, body: body, head: head };
         return shadow(g, true);
     };
-    C.hero = function () {
-        var g = C.humanoid(0x2e86c1, 0xf1c9a5, 0x8b5a2b, 1);
-        var cloak = box(0.6, 0.75, 0.08, 0x7fd4ff, 0, 1.2, -0.2); cloak.visible = false; g.add(cloak); g.userData.cloak = cloak;
+    C.hero = function (tunic, cloakColor) {           // the co-op friend gets other colours
+        var g = C.humanoid(tunic || 0x2e86c1, 0xf1c9a5, tunic ? 0x2b1d14 : 0x8b5a2b, 1);
+        var cloak = box(0.6, 0.75, 0.08, cloakColor || 0x7fd4ff, 0, 1.2, -0.2); cloak.visible = false; g.add(cloak); g.userData.cloak = cloak;
         var glider = new T.Group(); glider.visible = false;
         glider.add(cone(1.6, 0.5, 0x7fd4ff, 0, 2.5, 0, 6)); g.add(glider); g.userData.glider = glider;
         return g;

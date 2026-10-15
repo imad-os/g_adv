@@ -2,11 +2,11 @@
   "mypc": 1,
   "id": "g-adv",
   "name": "Echoes of Ardalia",
-  "description": "Open-world low-poly adventure: climb, glide, ride, cook and free Ardalia from the Red Moon",
+  "description": "Open-world low-poly adventure, solo or co-op: climb, glide, ride, cook and free Ardalia from the Red Moon",
   "type": "game",
   "entry": "index.html",
   "icon": "icon.svg",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "scores": false,
-  "config": { "dayMinutes": 24, "voice": true, "voiceBase": "voices/", "voiceTimeoutMs": 1000, "difficulty": 1, "quality": "", "lang": "" }
+  "config": { "dayMinutes": 24, "voice": true, "voiceBase": "voices/", "voiceTimeoutMs": 1000, "difficulty": "adventurer", "quality": "", "lang": "" }
 }

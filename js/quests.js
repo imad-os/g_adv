@@ -38,8 +38,9 @@
         var d = byId[id], q = qs(id), S = G.state, r = d.reward || {};
         q.s = 'done';
         S.stats.quests++;
-        if (r.hearts) { S.maxHearts += r.hearts; }
-        if (r.stamina) { S.maxStamina += r.stamina * 0.2; }
+        var already = S.coopGot[id];                    // got this reward already while helping a friend: no second heart
+        if (r.hearts && !already) { S.maxHearts += r.hearts; }
+        if (r.stamina && !already) { S.maxStamina += r.stamina * 0.2; }
         S.hearts = S.maxHearts;
         for (var k in r.items || {}) G.give(k, r.items[k]);
         if (r.items && r.items.windcloak) G.player.sync();
@@ -54,8 +55,24 @@
         unlock();
         if (S.tracked === id) S.tracked = nextTrack();
         G.checkAch();
+        if (G.coop) G.coop.onQuestDone(id);
         G.saveGame(false);
     }
+    /* co-op guest: the host finished a quest, the friend gets the same reward once */
+    Q.coopReward = function (id) {
+        var d = byId[id], S = G.state; if (!d || S.coopGot[id] || Q.done(id)) return false;
+        var r = d.reward || {};
+        S.coopGot[id] = 1;
+        if (r.hearts) S.maxHearts += r.hearts;
+        if (r.stamina) S.maxStamina += r.stamina * 0.2;
+        S.hearts = S.maxHearts;
+        for (var k in r.items || {}) G.give(k, r.items[k]);
+        if (r.items && r.items.windcloak) G.player.sync();
+        if (r.xp) G.addXp(r.xp);
+        G.ui.banner(G.t('coop_reward'), G.t('q_' + id)); G.audio.sfxQuest();
+        G.saveGame(false);
+        return true;
+    };
     function nextTrack() {
         for (var i = 0; i < G.QUESTS.length; i++) if (Q.active(G.QUESTS[i].id)) return G.QUESTS[i].id;
         return '';
@@ -211,7 +228,9 @@
         var S = G.state;
         switch (near.kind) {
             case 'npc': Q.talk(target); break;
-            case 'horse': G.player.mount(target); break;
+            case 'horse':
+                if (G.coop && G.coop.role === 'guest') { G.ui.toast(G.t('coop_nohorse')); break; }   // horses live in the host's world
+                G.player.mount(target); break;
             case 'item':
                 if (G.give(target.type, 1)) {
                     G.world.takeItem(target); S.stats.picked++; G.audio.sfxPick();
@@ -223,7 +242,7 @@
                 var village = target.village;
                 G.ui.choice(G.t('fire'), village ? [G.t('cookit'), G.t('rest'), G.t('cancel')] : [G.t('cookit'), G.t('cancel')], function (c) {
                     if (c === 0) G.ui.openCook();
-                    else if (c === 1 && village) G.rest();
+                    else if (c === 1 && village) { if (G.coop && G.coop.role === 'guest') G.ui.toast(G.t('coop_norest')); else G.rest(); }
                 });
                 break;
             case 'beacon':

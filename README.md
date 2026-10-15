@@ -18,9 +18,17 @@ Shift = sprint, Backspace = map, Esc pauses.
   a boss, levels, achievements and a daily gift.
 - AI: villagers with daily schedules who flee monsters, prey that flees, boars that fight back, wolf packs at night,
   Grubbers with sight/hearing suspicion, call-for-help and attack-turn tactics, a two-move boss.
-- Quality Low / Medium / High (Settings), full button mapping, English, French, Arabic and Moroccan Darija.
+- Four difficulties chosen at New game: Wanderer, Adventurer, Champion, Legend (enemy damage, health, speed and sight,
+  hunger, weapon wear, healing and xp all scale; on Legend hearts only come back from food).
+- Co-op for two over My PC multiplayer (same Wi-Fi, any two My PC devices): Title → Host a co-op game / Join a friend, or
+  in game Menu → System → Invite a friend. The guest plays their own hero from their own save in the host's world;
+  enemies attack the nearest player; every kill and every host quest reward is shared. Names are the My PC profile names.
+- Settings in six sections: Graphics (quality Auto/Low/Medium/High from My PC's tier, view distance, grass, shadows,
+  render resolution, FPS counter), Gameplay, Camera (distance, height, field of view, shake), Audio, Interface (HUD size,
+  clock, FPS) and Button mapping: press OK on an action, then press the button you want (detected, 6 s, ◀ ▶ = no button).
+- English, French, Arabic and Moroccan Darija.
 
 ## Owner config (App Store Manager → Config)
-`dayMinutes`, `difficulty`, `quality` (`low|medium|high`), `lang` (`en|fr|ar|ary`), `voice`, `voiceBase`, `voiceTimeoutMs`, `startHearts`.
+`dayMinutes`, `difficulty` (default for new games: `wanderer|adventurer|champion|legend`), `quality` (`low|medium|high`), `lang` (`en|fr|ar|ary`), `voice`, `voiceBase`, `voiceTimeoutMs`, `startHearts`.
 
 `lib/three.min.js` is three.js r160 (MIT, see `lib/LICENSE-three.txt`).

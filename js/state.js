@@ -35,6 +35,8 @@
             stats: { quests: 0, kills: 0, cooked: 0, picked: 0, climbed: 0, glided: 0, rode: 0, beacons: 0, hollows: 0, broken: 0, redNights: 0, level: 1, playSec: 0, boars: 0 },
             ach: {},
             gift: '',                                    // last daily gift date
+            difficulty: G.cfg.difficulty,                // wanderer | adventurer | champion | legend
+            coopGot: {},                                 // quest id -> 1: reward already received while helping a friend
             ended: false
         };
     };
@@ -90,16 +92,16 @@
         G.player && G.player.showWeapon();
     };
     G.weapon = function () { var s = G.state; return s.equip >= 0 && s.weapons[s.equip] ? s.weapons[s.equip] : null; };
-    G.wearWeapon = function () {                       // one hit = one point of durability
+    G.wearWeapon = function () {                       // one hit = one point of durability (more on harder difficulties)
         var w = G.weapon(); if (!w) return;
-        w.dur--;
+        w.dur -= G.diff().wear;
         if (w.dur <= 0) {
             G.state.weapons.splice(G.state.equip, 1);
             G.state.stats.broken++;
             G.audio.sfxBreak(); G.ui.toast(G.t('broke', G.t('item_' + w.id)));
             var best = -1, bd = -1;                     // auto-equip the strongest left
             for (var i = 0; i < G.state.weapons.length; i++) { var d = G.ITEMS[G.state.weapons[i].id].dmg; if (d > bd) { bd = d; best = i; } }
-            G.equip(best);
+            G.equip(G.settings.autoEquip ? best : -1);
             G.checkAch();
         }
     };
@@ -128,7 +130,7 @@
         return result;
     };
     G.addXp = function (n) {
-        var s = G.state; s.xp += n;
+        var s = G.state; s.xp += Math.round(n * G.diff().xp);
         while (s.level < G.LEVELS.length && s.xp >= G.LEVELS[s.level]) {
             s.level++; s.stats.level = s.level;
             s.hearts = s.maxHearts;
@@ -175,20 +177,35 @@
         for (var k in s) if (d[k] !== undefined) s[k] = d[k];
         for (k in G.newState().stats) if (typeof s.stats[k] !== 'number') s.stats[k] = 0;
         if (!(s.hearts > 0)) s.hearts = Math.max(1, s.maxHearts);
+        if (!G.DIFFS[s.difficulty]) s.difficulty = 'adventurer';     // saves from before 1.1.0
+        if (!s.coopGot || typeof s.coopGot !== 'object') s.coopGot = {};
         G.state = s; unpackFog(s.fog);
         return true;
     };
     G.resetState = function () { G.state = G.newState(); fogBits.fill(0); };
 
     /* ---------- settings ---------- */
-    G.settings = { quality: '', music: true, sfx: true, voice: true, autoSprint: true, camDist: 1, invertTurn: false,
-                   binds: { interact: 'ok', attack: 'ok', jump: 'ok', sprint: 'run', map: 'cancel', menu: 'menu' } };
+    G.DEFAULT_BINDS = { interact: 'ok', attack: 'ok', jump: 'ok', sprint: 'run', map: 'cancel', menu: 'menu' };
+    G.settings = {
+        quality: '',                                     // '' = from the TV (My PC's quality tier), or low | medium | high
+        gfx: { view: 0, grass: null, shadows: null, pixel: 0 },   // advanced overrides (0 / null = the preset's value)
+        music: true, sfx: true, voice: true,
+        autoSprint: true, invertTurn: false, questMarker: true, autoEquip: true,
+        camDist: 1, camHeight: 1, fov: 60, shake: true,
+        hudScale: 1, fps: false, clock24: true,
+        binds: JSON.parse(JSON.stringify(G.DEFAULT_BINDS))
+    };
+    var SETTINGS_DEFAULT = JSON.stringify(G.settings);
+    G.resetSettings = function () { G.settings = JSON.parse(SETTINGS_DEFAULT); G.applySettings(true); };
+    var BTN = { ok: 1, run: 1, cancel: 1, menu: 1, none: 1 };
     G.loadSettings = function () {
         var d = MyPC.load('settings', null);
-        if (d && typeof d === 'object') for (var k in G.settings) if (d[k] !== undefined) {
-            if (k === 'binds' && d.binds) { for (var b in G.settings.binds) if (typeof d.binds[b] === 'string') G.settings.binds[b] = d.binds[b]; }
-            else G.settings[k] = d[k];
+        if (d && typeof d === 'object') for (var k in G.settings) if (d[k] !== undefined && d[k] !== null) {
+            if (k === 'binds' && d.binds) { for (var b in G.settings.binds) if (BTN[d.binds[b]]) G.settings.binds[b] = d.binds[b]; }
+            else if (k === 'gfx' && typeof d.gfx === 'object') { for (var g in G.settings.gfx) if (d.gfx[g] !== undefined) G.settings.gfx[g] = d.gfx[g]; }
+            else if (typeof d[k] === typeof G.settings[k]) G.settings[k] = d[k];
         }
+        if (G.settings.binds.interact === 'none') G.settings.binds.interact = 'ok';
     };
     G.saveSettings = function () { try { MyPC.save('settings', G.settings); } catch (e) {} };
 })();

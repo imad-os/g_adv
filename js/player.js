@@ -34,6 +34,7 @@
         weaponMesh = G.chars.weapon(w.id); weaponMesh.rotation.x = Math.PI / 2; mesh.userData.hand.add(weaponMesh);
     };
     P.mode = function () { return mode; };
+    P.swinging = function () { return swingT > 0 ? swingT : 0; };
     P.riding = function () { return mount; };
     P.exhausted = function () { return exhausted; };
     P.taming = function () { return tame; };
@@ -69,7 +70,7 @@
 
     P.hurt = function (hearts, fromX, fromZ) {
         if (hurtT > 0 || G.dead) return;
-        hearts *= Math.max(0.25, G.cfg.difficulty);
+        hearts *= G.diff().dmg;
         S.hearts = Math.max(0, S.hearts - hearts); hurtT = 0.8;
         G.audio.sfxHurt(); G.ui.flash();
         if (fromX !== undefined && !mount) { var dx = P.pos.x - fromX, dz = P.pos.z - fromZ, d = Math.sqrt(dx * dx + dz * dz) || 1; collide(P.pos.x + dx / d * 1.5, P.pos.z + dz / d * 1.5); }
@@ -151,8 +152,9 @@
         } else if (S.stamina > maxSt && staminaCd <= 0) { /* overfilled stamina stays until used */ }
 
         /* hunger: empty in about 1.5 in-game days; hearts come back slowly when well fed */
-        S.hunger = Math.max(0, S.hunger - DT * 100 / (G.DAY_SECONDS * 1.5));
-        if (S.hunger > 50 && S.hearts < S.maxHearts && hurtT <= 0) S.hearts = Math.min(S.maxHearts, S.hearts + DT / 45);
+        var df = G.diff();
+        S.hunger = Math.max(0, S.hunger - DT * 100 * df.hunger / (G.DAY_SECONDS * 1.5));
+        if (S.hunger > 50 && S.hearts < S.maxHearts && hurtT <= 0) S.hearts = Math.min(S.maxHearts, S.hearts + DT * df.regen / 45);
 
         if (mount) return ride(turn, U, D);
         var fx = Math.cos(P.ry), fz = -Math.sin(P.ry);           // facing (ry = 0 faces +x)

@@ -4,7 +4,7 @@ body { font-family: Arial, "Segoe UI", Tahoma, sans-serif; color: #fff; }
 
 /* All 2D UI sits on a fixed 1920x1080 stage, scaled to the window by main.js. */
 #stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; pointer-events: none; }
-#hud { position: absolute; inset: 0; direction: ltr; }
+#hud { position: absolute; inset: 0; direction: ltr; transform-origin: 50% 50%; }
 .shadow, #clock, #weapon, #prompt, .toast, #banner, #trial { text-shadow: 0 3px 0 #000, 0 0 8px rgba(0,0,0,0.6); }
 
 /* hearts: top-left, inside the 5% safe area */
@@ -44,7 +44,7 @@ body { font-family: Arial, "Segoe UI", Tahoma, sans-serif; color: #fff; }
 #flash { position: absolute; inset: 0; background: #ff2020; opacity: 0; transition: opacity 0.25s; }
 
 /* dialogue box */
-#dialog { position: absolute; left: 260px; right: 260px; bottom: 70px; background: rgba(10,14,34,0.9); border: 5px solid #e8d8a8;
+#dialog { z-index: 5; position: absolute; left: 260px; right: 260px; bottom: 70px; background: rgba(10,14,34,0.9); border: 5px solid #e8d8a8;
           border-radius: 26px; padding: 30px 46px; }
 #dlgName { display: block; font-size: 40px; color: #ffd23f; margin-bottom: 10px; }
 #dlgText { margin: 0; font-size: 42px; line-height: 1.35; }
@@ -53,24 +53,63 @@ body { font-family: Arial, "Segoe UI", Tahoma, sans-serif; color: #fff; }
 #dlgChoices li.focus { border-color: #ffd23f; color: #ffd23f; transform: scale(1.03); }
 
 /* full-screen menus */
-#screen { position: absolute; inset: 0; background: rgba(8,12,28,0.9); padding: 60px 120px; box-sizing: border-box; }
-#tabs { display: flex; gap: 18px; justify-content: center; margin-bottom: 30px; }
-#tabs span { font-size: 40px; font-weight: 800; padding: 12px 30px; border-radius: 16px; border: 5px solid transparent; color: #aab4e8; }
-#tabs span.on { color: #fff; background: #26307a; }
-#tabs.focus span.on { border-color: #ffd23f; color: #ffd23f; transform: scale(1.06); }
-#tabs span.title { font-size: 84px; color: #ffe57a; border: none; background: none; text-shadow: 0 6px 0 #000; }
-#panel { height: 800px; }
-.list { list-style: none; margin: 0 auto; padding: 0 10px; width: 1300px; max-height: 790px; overflow: hidden; display: flex; flex-direction: column; gap: 10px; }
-.list li { flex: none; position: relative; font-size: 40px; font-weight: 700; padding: 14px 32px; border-radius: 16px; background: #1b2459; border: 6px solid transparent; }
+#screen { position: absolute; inset: 0; padding: 56px 120px; box-sizing: border-box;
+          background: radial-gradient(ellipse at 50% 30%, rgba(30,40,96,0.93), rgba(6,9,22,0.96) 70%); }
+#screen.k-title { background: linear-gradient(90deg, rgba(6,9,22,0.94) 0%, rgba(6,9,22,0.78) 48%, rgba(6,9,22,0.2) 100%); }
+#screen.k-diff { background: radial-gradient(ellipse at 50% 40%, rgba(40,30,70,0.92), rgba(6,9,22,0.97) 75%); }
+#tabs { display: flex; gap: 14px; justify-content: center; align-items: center; margin-bottom: 12px; }
+#tabs span { font-size: 36px; font-weight: 800; padding: 12px 28px; border-radius: 40px; border: 5px solid transparent; color: #9aa6dd; background: rgba(255,255,255,0.05); }
+#tabs span.on { color: #fff; background: linear-gradient(180deg, #3346b8, #22307e); }
+#tabs.focus span.on { border-color: #ffd23f; color: #ffd23f; transform: scale(1.07); box-shadow: 0 0 24px rgba(255,210,63,0.45); }
+#tabs span.title { font-size: 92px; color: #ffe57a; border: none; background: none; padding: 0; letter-spacing: 3px;
+                   text-shadow: 0 6px 0 #6b3d00, 0 0 40px rgba(255,200,80,0.45); }
+#tabs span.tagline { display: block; font-size: 34px; font-weight: 400; color: #c8d0ff; background: none; padding: 0 0 0 4px; border: none; letter-spacing: 6px; text-transform: uppercase; }
+#screen.k-title #tabs, #screen.k-diff #tabs { flex-direction: column; align-items: flex-start; gap: 6px; margin-bottom: 34px; }
+#screen.k-diff #tabs { align-items: center; }
+#screen.k-diff #tabs span.title { font-size: 76px; }
+#status { text-align: center; font-size: 30px; color: #c8d0ff; height: 44px; margin-bottom: 14px; }
+#panel { height: 740px; }
+#stage.menu #hud { visibility: hidden; }
+.list { list-style: none; margin: 0 auto; padding: 6px 14px; width: 1320px; max-height: 740px; overflow: hidden; display: flex; flex-direction: column; gap: 10px; }
+.list li { flex: none; position: relative; font-size: 38px; font-weight: 700; padding: 14px 32px; border-radius: 18px;
+           background: linear-gradient(90deg, rgba(40,54,140,0.85), rgba(27,36,89,0.85)); border: 5px solid transparent; }
+.list li .ic { display: inline-block; width: 64px; font-style: normal; color: #8fb4ff; }
 .list li b { position: absolute; right: 32px; top: 14px; color: #ffe57a; }
 html[dir="rtl"] .list li b { right: auto; left: 32px; }
-.list li small { display: block; font-size: 30px; font-weight: 400; color: #c8d0ff; margin-top: 4px; }
+.list li small { display: block; font-size: 29px; font-weight: 400; color: #c8d0ff; margin-top: 4px; }
 .list li em { display: block; height: 10px; margin-top: 8px; background: rgba(0,0,0,0.5); border-radius: 5px; overflow: hidden; }
 .list li em i { display: block; height: 100%; background: #5ee36a; }
-.list li.head { background: none; color: #ffd23f; font-size: 36px; padding: 10px 8px 0; }
+.list li.head { background: none; color: #ffd23f; font-size: 34px; padding: 10px 8px 0; border: none; }
+.list li.head small { color: #9aa6dd; }
 .list li.dim { color: #9aa3c8; }
-.list li.focus { border-color: #ffd23f; background: #2c3a8c; transform: scale(1.02); }
+.list li.focus { border-color: #ffd23f; background: linear-gradient(90deg, #3b4fc4, #2c3a8c); transform: scale(1.02); box-shadow: 0 0 26px rgba(255,210,63,0.35); }
+.list li.focus .ic { color: #ffd23f; }
+.list li.wait { animation: waitp 0.9s infinite; }
+.list li.wait b { color: #7fe3ff; }
+@keyframes waitp { 50% { border-color: #7fe3ff; } }
+/* title: menu on the left, the world behind, a description card */
+.titlepanel { display: flex; gap: 60px; align-items: flex-start; }
+.titlepanel .list { margin: 0; width: 820px; }
+.tcard { width: 600px; min-height: 300px; padding: 34px 40px; box-sizing: border-box; border-radius: 24px; background: rgba(8,12,30,0.72); border: 4px solid rgba(232,216,168,0.5); }
+.tcard p { margin: 0 0 30px; font-size: 34px; line-height: 1.4; min-height: 150px; }
+.tcard .who { font-size: 36px; font-weight: 800; color: #ffd38a; }
+.tcard small { display: block; margin-top: 10px; font-size: 26px; color: #9aa6dd; }
+/* difficulty cards */
+.cards { list-style: none; margin: 10px auto 0; padding: 0; display: flex; gap: 34px; justify-content: center; }
+.cards li { width: 360px; height: 600px; box-sizing: border-box; padding: 30px 26px; border-radius: 26px; text-align: center; border: 6px solid rgba(255,255,255,0.18);
+            background: linear-gradient(180deg, rgba(40,54,140,0.9), rgba(15,20,50,0.95)); display: flex; flex-direction: column; align-items: center; }
+.cards li .ic { font-style: normal; font-size: 110px; line-height: 1.2; }
+.cards li span { font-size: 46px; font-weight: 800; margin-top: 8px; }
+.cards li b { font-size: 40px; color: #ffd23f; margin: 10px 0 18px; letter-spacing: 4px; }
+.cards li small { font-size: 28px; line-height: 1.35; color: #d6dcff; }
+.cards li.d0 .ic { color: #7ee38a; } .cards li.d1 .ic { color: #8fd0ff; } .cards li.d2 .ic { color: #ffb347; } .cards li.d3 .ic { color: #ff5a5a; }
+.cards li.d3 { background: linear-gradient(180deg, rgba(110,20,30,0.92), rgba(30,8,14,0.96)); }
+.cards li.focus { border-color: #ffd23f; transform: scale(1.06) translateY(-10px); box-shadow: 0 0 40px rgba(255,210,63,0.5); }
+/* co-op friend and FPS */
+#partner { position: absolute; left: 96px; top: 206px; font-size: 32px; font-weight: 800; color: #ffd38a; background: rgba(0,0,0,0.5);
+           padding: 6px 20px; border-radius: 12px; border: 3px solid rgba(255,179,71,0.7); text-shadow: 0 2px 0 #000; }
+#fps { position: absolute; right: 96px; top: 112px; font-size: 28px; font-weight: 700; color: #7fff8a; background: rgba(0,0,0,0.55); padding: 4px 14px; border-radius: 10px; }
 .mappanel { display: flex; gap: 40px; justify-content: center; align-items: flex-start; }
-canvas.map { width: 800px; height: 800px; border-radius: 18px; border: 5px solid #e8d8a8; }
+canvas.map { width: 760px; height: 760px; border-radius: 18px; border: 5px solid #e8d8a8; }
 .mapinfo { width: 560px; font-size: 40px; font-weight: 700; line-height: 1.4; padding-top: 30px; }
 #hint { position: absolute; left: 0; right: 0; bottom: 40px; text-align: center; font-size: 32px; color: #c8d0ff; }

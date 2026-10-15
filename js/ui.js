@@ -14,7 +14,7 @@
     U.init = function () {
         ['hud', 'hearts', 'stwheel', 'hunger', 'hungerfill', 'clock', 'compass', 'compassStrip', 'qmark', 'weapon', 'prompt', 'toasts',
          'banner', 'bannerTitle', 'bannerSub', 'dialog', 'dlgName', 'dlgText', 'dlgChoices', 'screen', 'tabs', 'panel', 'hint',
-         'flash', 'trial', 'level', 'spurs'].forEach(function (id) { el[id] = $(id); });
+         'flash', 'trial', 'level', 'spurs', 'partner', 'status', 'stage'].forEach(function (id) { el[id] = $(id); });
         var strip = el.compassStrip, dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
         for (var r = 0; r < 3; r++) for (var i = 0; i < 8; i++) { var s = document.createElement('span'); s.textContent = dirs[i]; s.className = i % 2 ? 'minor' : ''; strip.appendChild(s); }
     };
@@ -78,7 +78,7 @@
         var hu = Math.round(S.hunger);
         if (hu !== last.hunger) { el.hungerfill.style.width = hu + '%'; el.hunger.className = hu < 20 ? 'low' : ''; last.hunger = hu; }
         var hh = Math.floor(S.hour), mm = Math.floor((S.hour - hh) * 6) * 10;
-        var clock = G.t('day') + ' ' + S.day + '  ·  ' + (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm + '  ·  ' + G.t('season' + G.season()) + (G.redNight ? '  ·  ' + G.t('rednight') : G.weather.rain ? '  ·  ☂' : '');
+        var clock = G.t('day') + ' ' + S.day + '  ·  ' + clockText(hh, mm) + '  ·  ' + G.t('season' + G.season()) + (G.redNight ? '  ·  ' + G.t('rednight') : G.weather.rain ? '  ·  ☂' : '');
         if (clock !== last.clock) { el.clock.textContent = (G.isNight() ? '☾ ' : '☀ ') + clock; last.clock = clock; }
         var w = G.weapon(), wt = w ? G.t('item_' + w.id) + '  ' + Math.round(w.dur / G.ITEMS[w.id].dur * 100) + '%' : G.t('fists');
         wt += '   Lv ' + S.level;
@@ -86,13 +86,19 @@
         var sp = P.riding() ? '➤'.repeat(P.spurs()) : '';
         if (el.spurs.textContent !== sp) el.spurs.textContent = sp;
     }
+    function clockText(hh, mm) {
+        var m = (mm < 10 ? '0' : '') + mm;
+        if (G.settings.clock24) return (hh < 10 ? '0' : '') + hh + ':' + m;
+        return ((hh + 11) % 12 + 1) + ':' + m + (hh < 12 ? ' am' : ' pm');
+    }
     function compass(P, S) {                                /* 2 px per degree */
         var heading = (P.ry * 180 / Math.PI) % 360; if (heading < 0) heading += 360;   // 0 = +x (east)
         var yaw = Math.round((90 - heading + 360) % 360);                          // degrees from north, clockwise
-        if (yaw === last.yaw && P.pos.x === last.px && P.pos.z === last.pz) return;
+        if (yaw === last.yaw && P.pos.x === last.px && P.pos.z === last.pz && G.settings.questMarker === last.qm) return;
+        last.qm = G.settings.questMarker;
         last.yaw = yaw; last.px = P.pos.x; last.pz = P.pos.z;
         el.compassStrip.style.transform = 'translateX(' + (-(yaw / 45) * 90 - 765 + 350) + 'px)';
-        var tq = S.tracked ? G.quests.target(S.tracked) : null;
+        var tq = S.tracked && G.settings.questMarker ? G.quests.target(S.tracked) : null;
         if (tq) {
             var ang = Math.atan2(tq.x - P.pos.x, -(tq.z - P.pos.z)) * 180 / Math.PI;   // from north, clockwise
             var diff = ((ang - yaw + 540) % 360) - 180;
@@ -131,27 +137,47 @@
 
     /* ---------------- menus ---------------- */
     var TABS = ['map', 'quests', 'items', 'journal', 'settings', 'system'];
+    var TAB_ICON = { map: '⌖', quests: '✦', items: '⚔', journal: '✎', settings: '⚙', system: '☰' };
+    var capture = null;                 // button detection: { fn, armed, t }
     U.openMenu = function (tab) {
         if (screen || G.dead) return;
         G.audio.sfxMenu();
         screen = { kind: 'game', tab: tab || 'quests', items: [], focus: -1, sub: '' };
         build();
     };
-    U.openTitle = function () { screen = { kind: 'title', items: [], focus: 0, sub: '' }; build(); };
+    U.openTitle = function () { capture = null; screen = { kind: 'title', items: [], focus: 0, sub: '' }; build(); };
     U.openCook = function () { screen = { kind: 'cook', items: [], focus: 0, sel: [] }; build(); };
-    U.close = function () { screen = null; el.screen.style.display = 'none'; G.audio.sfxMenu(); };
+    U.openNewGame = function (after) {
+        screen = { kind: 'diff', items: [], focus: Math.max(0, G.DIFF_IDS.indexOf(G.cfg.difficulty)), cards: true, after: after || null };
+        build();
+    };
+    U.close = function () { capture = null; screen = null; el.screen.style.display = 'none'; el.stage.className = ''; G.audio.sfxMenu(); };
     U.ending = function () { U.dialog(G.t('npc_mira'), G.t('ending')); };
+    U.partnerHud = function (text) {
+        if (el.partner.textContent === text) return;
+        el.partner.textContent = text; el.partner.style.display = text ? '' : 'none';
+    };
 
     function item(label, on, extra) { var o = extra || {}; o.label = label; o.on = on; return o; }
+    function header(text, sub) {
+        el.tabs.textContent = '';
+        var h = document.createElement('span'); h.className = 'title'; h.textContent = text; el.tabs.appendChild(h);
+        if (sub) { var t = document.createElement('span'); t.className = 'tagline'; t.textContent = sub; el.tabs.appendChild(t); }
+    }
     function build() {
         var s = screen; s.items = [];
-        el.screen.style.display = '';
-        el.tabs.textContent = ''; el.panel.textContent = ''; el.panel.className = '';
+        el.screen.style.display = ''; el.stage.className = 'menu';
+        el.screen.className = 'k-' + s.kind + (s.fromTitle ? ' k-title' : '');
+        el.tabs.textContent = ''; el.panel.textContent = ''; el.panel.className = ''; el.status.textContent = '';
         if (s.kind === 'title') buildTitle(s);
         else if (s.kind === 'cook') buildCook(s);
+        else if (s.kind === 'diff') buildDiff(s);
         else {
-            for (var i = 0; i < TABS.length; i++) { var t = document.createElement('span'); t.textContent = G.t('tab_' + TABS[i]); t.className = TABS[i] === s.tab ? 'on' : ''; el.tabs.appendChild(t); }
-            el.tabs.className = s.focus < 0 ? 'focus' : '';
+            if (s.fromTitle) header(G.t('tab_settings'));
+            else {
+                for (var i = 0; i < TABS.length; i++) { var t = document.createElement('span'); t.textContent = TAB_ICON[TABS[i]] + '  ' + G.t('tab_' + TABS[i]); t.className = TABS[i] === s.tab ? 'on' : ''; el.tabs.appendChild(t); }
+                el.status.textContent = statusLine();
+            }
             if (s.tab === 'map') buildMap(s);
             else if (s.tab === 'quests') buildQuests(s);
             else if (s.tab === 'items') buildItems(s);
@@ -159,50 +185,84 @@
             else if (s.tab === 'settings') buildSettings(s);
             else buildSystem(s);
         }
+        if (s.focus >= s.items.length) s.focus = s.items.length - 1;
+        if (s.focus >= 0 && s.items[s.focus] && s.items[s.focus].head) s.focus = firstFocus(s);
         render();
+    }
+    function statusLine() {
+        var S = G.state, hh = Math.floor(S.hour), mm = Math.floor((S.hour - hh) * 6) * 10;
+        var line = G.t('level') + ' ' + S.level + '   ♥ ' + Math.floor(S.hearts * 4) / 4 + ' / ' + S.maxHearts + '   ' + G.t('day') + ' ' + S.day + '  ' + clockText(hh, mm) + '   ' + G.t('diff_' + G.diffId());
+        var p = G.coop.partner; if (p && p.ready) line += '   ⚑ ' + p.name;
+        return line;
     }
     function render() {
         var s = screen;
         if (s.tab === 'map' && s.kind === 'game') { drawMap(); }
         else {
-            var ul = document.createElement('ul'); ul.className = 'list';
+            var ul = document.createElement('ul'); ul.className = s.cards ? 'cards' : 'list';
             for (var i = 0; i < s.items.length; i++) {
                 var it = s.items[i], li = document.createElement('li');
                 if (it.head) li.className = 'head';
+                if (it.icon) { var ic = document.createElement('i'); ic.className = 'ic'; ic.textContent = it.icon; li.appendChild(ic); }
                 var a = document.createElement('span'); a.textContent = it.label; li.appendChild(a);
-                if (it.value !== undefined) { var b = document.createElement('b'); b.textContent = (it.left ? '◀ ' : '') + it.value + (it.right ? ' ▶' : ''); li.appendChild(b); }
+                if (it.value !== undefined) { var b = document.createElement('b'); b.textContent = (it.left ? '◀  ' : '') + it.value + (it.right ? '  ▶' : ''); li.appendChild(b); }
                 if (it.sub) { var sm = document.createElement('small'); sm.textContent = it.sub; li.appendChild(sm); }
                 if (it.bar !== undefined) { var bar = document.createElement('em'); var f = document.createElement('i'); f.style.width = Math.round(it.bar * 100) + '%'; bar.appendChild(f); li.appendChild(bar); }
                 if (it.dim) li.className += ' dim';
+                if (it.wait) li.className += ' wait';
+                if (it.cls) li.className += ' ' + it.cls;
                 if (i === s.focus) li.className += ' focus';
                 ul.appendChild(li);
             }
-            el.panel.textContent = ''; el.panel.appendChild(ul);
-            var f2 = ul.children[s.focus]; if (f2) { var top = f2.offsetTop - 300; ul.scrollTop = top > 0 ? top : 0; }
+            el.panel.textContent = '';
+            if (s.kind === 'title') {
+                el.panel.className = 'titlepanel';
+                el.panel.appendChild(ul);
+                var card = document.createElement('div'); card.className = 'tcard';
+                var fi = s.items[s.focus], d1 = document.createElement('p'); d1.textContent = fi && fi.desc ? fi.desc : ''; card.appendChild(d1);
+                var who = document.createElement('div'); who.className = 'who'; who.textContent = '👤  ' + G.coop.myName(); card.appendChild(who);
+                var ver = document.createElement('small'); ver.textContent = 'v' + G.VERSION + '   ·   ' + G.t('q_' + G.qualityName()); card.appendChild(ver);
+                el.panel.appendChild(card);
+            } else el.panel.appendChild(ul);
+            if (!s.cards) { var f2 = ul.children[s.focus]; if (f2) { var top = f2.offsetTop - 300; ul.scrollTop = top > 0 ? top : 0; } }
         }
-        if (s.kind === 'game') el.tabs.className = s.focus < 0 ? 'focus' : '';
-        el.hint.textContent = s.kind === 'game' && s.focus < 0 ? G.t('hint_tabs') : s.tab === 'map' && s.focus >= 0 ? G.t('hint_map') : G.t('hint_list');
-        var f = s.items[s.focus]; if (f) MyPC.announce(f.label + (f.value !== undefined ? ' ' + f.value : ''));
+        if (s.kind === 'game' && !s.fromTitle) el.tabs.className = s.focus < 0 ? 'focus' : '';
+        el.hint.textContent = capture ? G.t('hint_capture') : s.cards ? G.t('hint_cards') : s.kind === 'game' && s.focus < 0 ? G.t('hint_tabs') : s.tab === 'map' && s.focus >= 0 ? G.t('hint_map') : G.t('hint_list');
+        var f = s.items[s.focus]; if (f) MyPC.announce(f.label + (f.value !== undefined ? ' ' + f.value : '') + (s.cards && f.sub ? '. ' + f.sub : ''));
     }
     function firstFocus(s) { for (var i = 0; i < s.items.length; i++) if (!s.items[i].head) return i; return -1; }
 
     function buildTitle(s) {
         var auto = G.peekSave('save'), man = G.peekSave('manual');
-        el.tabs.innerHTML = ''; var h = document.createElement('span'); h.className = 'title'; h.textContent = G.t('title'); el.tabs.appendChild(h);
-        if (auto) s.items.push(item(G.t('continue'), function () { G.startGame('save'); }, { sub: summary(auto) }));
-        if (man) s.items.push(item(G.t('loadmanual'), function () { G.startGame('manual'); }, { sub: summary(man) }));
+        header(G.t('title'), G.t('tagline'));
+        if (auto) s.items.push(item(G.t('continue'), function () { G.startGame('save'); }, { sub: summary(auto), icon: '▶', desc: G.t('desc_continue') }));
+        if (man) s.items.push(item(G.t('loadmanual'), function () { G.startGame('manual'); }, { sub: summary(man), icon: '⤓', desc: G.t('desc_load') }));
         s.items.push(item(G.t('newgame'), function () {
-            if (!auto) { G.startGame(null); return; }
-            U.choice(G.t('newgame_sure'), [G.t('yes'), G.t('no')], function (c) { if (c === 0) G.startGame(null); });
-        }));
-        s.items.push(item(G.t('tab_settings'), function () { screen = { kind: 'game', tab: 'settings', items: [], focus: 0, fromTitle: true }; build(); }));
-        s.items.push(item(G.t('quit'), function () { MyPC.exit(); }));
-        if (s.focus >= s.items.length) s.focus = 0;
+            if (!auto) { U.openNewGame(); return; }
+            U.choice(G.t('newgame_sure'), [G.t('yes'), G.t('no')], function (c) { if (c === 0) U.openNewGame(); });
+        }, { icon: '✚', desc: G.t('desc_new') }));
+        if (G.coop.supported()) {
+            s.items.push(item(G.t('coop_host'), function () {
+                if (auto) { G.startGame('save'); G.coop.host(); } else U.openNewGame(function () { G.coop.host(); });
+            }, { icon: '⚑', desc: G.t('coop_host_desc') }));
+            s.items.push(item(G.t('coop_join'), function () { G.coop.join(); }, { icon: '⇄', desc: G.t('coop_join_desc') }));
+        }
+        s.items.push(item(G.t('tab_settings'), function () { screen = { kind: 'game', tab: 'settings', items: [], focus: 0, fromTitle: true, sub: '' }; build(); }, { icon: '⚙', desc: G.t('desc_settings') }));
+        s.items.push(item(G.t('quit'), function () { MyPC.exit(); }, { icon: '⏻', desc: G.t('desc_quit') }));
+    }
+    function buildDiff(s) {
+        header(G.t('choose_diff'), G.t('choose_diff_sub'));
+        var icons = ['☘', '⚔', '♛', '☠'];
+        G.DIFF_IDS.forEach(function (id, i) {
+            s.items.push(item(G.t('diff_' + id), function () {
+                var after = s.after; G.startGame(null, false, id); if (after) after();
+            }, { icon: icons[i], value: '★'.repeat(i + 1) + '☆'.repeat(3 - i), sub: G.t('diffd_' + id), cls: 'd' + i }));
+        });
     }
     function summary(d) {
         var done = 0; for (var k in d.quests) if (d.quests[k].s === 'done') done++;
         var mins = Math.floor((d.stats && d.stats.playSec || 0) / 60);
-        return G.t('day') + ' ' + d.day + '  ·  Lv ' + d.level + '  ·  ' + done + '/' + G.QUESTS.length + ' ' + G.t('tab_quests') + '  ·  ' + Math.floor(mins / 60) + 'h ' + (mins % 60) + 'm';
+        return G.t('day') + ' ' + d.day + '  ·  Lv ' + d.level + '  ·  ' + done + '/' + G.QUESTS.length + ' ' + G.t('tab_quests') + '  ·  ' + Math.floor(mins / 60) + 'h ' + (mins % 60) + 'm  ·  ' + G.t('diff_' + (G.DIFFS[d.difficulty] ? d.difficulty : 'adventurer'));
     }
     function buildQuests(s) {
         var S = G.state, any = false, d, q, i;
@@ -283,50 +343,129 @@
             s.items.push({ label: (got ? '★ ' : '☆ ') + G.t('ach_' + a.id), value: got ? '' : Math.min(a.n, Math.floor(st[a.stat] || 0)) + ' / ' + a.n, dim: !got });
         }
     }
-    var QUAL = ['low', 'medium', 'high'];
-    var BUTTONS = ['ok', 'run', 'cancel', 'menu', 'none'];
-    function cycle(list, cur, d) { var i = list.indexOf(cur); i = (i + d + list.length) % list.length; return list[i]; }
-    function buildSettings(s) {
-        var st = G.settings;
-        if (s.sub === 'controls') return buildControls(s);
-        function onoff(key, label) {
-            var f = function () { st[key] = !st[key]; G.applySettings(); build(); };
-            s.items.push(item(G.t(label), f, { value: G.t(st[key] ? 'on' : 'off'), left: f, right: f }));
-        }
-        var q = G.qualityName();
-        var fq = function (d) { return function () { st.quality = cycle(QUAL, q, d); G.applySettings(true); build(); }; };
-        s.items.push(item(G.t('set_quality'), fq(1), { value: G.t('q_' + q), left: fq(-1), right: fq(1), sub: G.t('set_quality_sub') }));
-        onoff('music', 'set_music'); onoff('sfx', 'set_sfx'); onoff('voice', 'set_voice'); onoff('autoSprint', 'set_autosprint'); onoff('invertTurn', 'set_invert');
-        var cams = [0.75, 1, 1.35], camN = ['near', 'normal', 'far'];
-        var fc = function (d) { return function () { var i = cams.indexOf(st.camDist); st.camDist = cams[(Math.max(0, i) + d + 3) % 3]; G.applySettings(); build(); }; };
-        s.items.push(item(G.t('set_camera'), fc(1), { value: G.t('cam_' + camN[Math.max(0, cams.indexOf(st.camDist))]), left: fc(-1), right: fc(1) }));
-        s.items.push(item(G.t('set_controls') + '  ▸', function () { s.sub = 'controls'; s.focus = 0; build(); }));
-        if (s.fromTitle) s.items.push(item(G.t('back'), function () { U.openTitle(); }));
+    /* ---------------- settings: sections, each option changes with ◀ ▶ ---------------- */
+    var SECTIONS = ['graphics', 'gameplay', 'camera', 'audio', 'interface', 'controls'];
+    var SEC_ICON = { graphics: '◩', gameplay: '⚔', camera: '◎', audio: '♫', interface: '▣', controls: '✜' };
+    var FNS = ['interact', 'attack', 'jump', 'sprint', 'map', 'menu'];
+    function cycle(list, cur, d) { var i = list.indexOf(cur); if (i < 0) i = 0; i = (i + d + list.length) % list.length; return list[i]; }
+    function opt(s, label, list, get, set, show, sub, rebuild) {
+        var f = function (d) { return function () { set(cycle(list, get(), d)); G.applySettings(!!rebuild); G.audio.sfxMenu(); build(); }; };
+        s.items.push(item(G.t(label), f(1), { value: show(get()), left: f(-1), right: f(1), sub: sub ? G.t(sub) : undefined }));
     }
+    function onoff(s, key, label, sub, rebuild) {
+        var st = G.settings;
+        opt(s, label, [true, false], function () { return st[key]; }, function (v) { st[key] = v; }, function (v) { return G.t(v ? 'on' : 'off'); }, sub, rebuild);
+    }
+    function named(list, names) { return function (v) { return G.t(names[Math.max(0, list.indexOf(v))]); }; }
+    function buildSettings(s) {
+        var st = G.settings, gx = st.gfx;
+        if (!s.sub) {
+            SECTIONS.forEach(function (k, i) {
+                s.items.push(item(G.t('sec_' + k), function () { s.back = i; s.sub = k; s.focus = 1; capture = null; build(); }, { icon: SEC_ICON[k], value: '▸', sub: G.t('sec_' + k + '_sub') }));
+            });
+            s.items.push(item(G.t('reset_all'), function () {
+                U.choice(G.t('reset_all_sure'), [G.t('yes'), G.t('no')], function (c) { if (c === 0) { G.resetSettings(); build(); G.ui.toast(G.t('reset_done')); } });
+            }, { icon: '↺' }));
+            if (s.fromTitle) s.items.push(item(G.t('back'), function () { U.openTitle(); }, { icon: '◂' }));
+            return;
+        }
+        s.items.push({ label: SEC_ICON[s.sub] + '  ' + G.t('sec_' + s.sub), head: true, sub: G.t('sec_' + s.sub + '_sub') });
+        if (s.sub === 'controls') buildControls(s);
+        else if (s.sub === 'graphics') {
+            var Q = ['', 'low', 'medium', 'high'];
+            opt(s, 'set_quality', Q, function () { return st.quality; }, function (v) { st.quality = v; },
+                function (v) { return v ? G.t('q_' + v) : G.t('q_auto', G.t('q_' + G.autoQuality())); }, 'set_quality_sub', true);
+            var V = [0, 3, 4, 5, 6];
+            opt(s, 'set_view', V, function () { return gx.view; }, function (v) { gx.view = v; }, named(V, ['preset', 'view_near', 'view_normal', 'view_far', 'view_vfar']), 'set_view_sub', true);
+            var B = [null, false, true];
+            opt(s, 'set_grass', B, function () { return gx.grass; }, function (v) { gx.grass = v; }, named(B, ['preset', 'off', 'on']), null, true);
+            opt(s, 'set_shadows', B, function () { return gx.shadows; }, function (v) { gx.shadows = v; }, named(B, ['preset', 'off', 'on']), 'set_shadows_sub', true);
+            var R = [0, 0.5, 0.75, 1];
+            opt(s, 'set_res', R, function () { return gx.pixel; }, function (v) { gx.pixel = v; }, function (v) { return v ? Math.round(v * 100) + ' %' : G.t('preset'); }, 'set_res_sub', true);
+            onoff(s, 'fps', 'set_fps', 'set_fps_sub');
+        } else if (s.sub === 'gameplay') {
+            if (G.playing && G.coop.role !== 'guest') {
+                opt(s, 'set_diff', G.DIFF_IDS, function () { return G.state.difficulty; }, function (v) { G.state.difficulty = v; },
+                    function (v) { return G.t('diff_' + v); }, 'diffd_' + G.state.difficulty);
+            } else s.items.push({ label: G.t('set_diff'), value: G.t('diff_' + (G.playing ? G.diffId() : G.cfg.difficulty)), sub: G.t(G.playing ? 'diff_host' : 'diff_newgame'), dim: true, on: null });
+            onoff(s, 'autoSprint', 'set_autosprint', 'set_autosprint_sub');
+            onoff(s, 'autoEquip', 'set_autoequip', 'set_autoequip_sub');
+            onoff(s, 'questMarker', 'set_marker', 'set_marker_sub');
+        } else if (s.sub === 'camera') {
+            var D = [0.75, 1, 1.35], H = [0.8, 1, 1.25], F = [55, 60, 70, 80];
+            opt(s, 'set_camera', D, function () { return st.camDist; }, function (v) { st.camDist = v; }, named(D, ['cam_near', 'cam_normal', 'cam_far']));
+            opt(s, 'set_camheight', H, function () { return st.camHeight; }, function (v) { st.camHeight = v; }, named(H, ['low', 'cam_normal', 'high']));
+            opt(s, 'set_fov', F, function () { return st.fov; }, function (v) { st.fov = v; }, function (v) { return v + '°'; }, 'set_fov_sub');
+            onoff(s, 'invertTurn', 'set_invert');
+            onoff(s, 'shake', 'set_shake');
+        } else if (s.sub === 'audio') {
+            onoff(s, 'music', 'set_music'); onoff(s, 'sfx', 'set_sfx'); onoff(s, 'voice', 'set_voice', 'set_voice_sub');
+            s.items.push({ label: G.t('volume_note'), head: true });
+        } else if (s.sub === 'interface') {
+            var Z = [0.85, 1, 1.15];
+            opt(s, 'set_hud', Z, function () { return st.hudScale; }, function (v) { st.hudScale = v; }, function (v) { return Math.round(v * 100) + ' %'; });
+            opt(s, 'set_clock', [true, false], function () { return st.clock24; }, function (v) { st.clock24 = v; }, function (v) { return v ? '24 h' : '12 h'; });
+            onoff(s, 'fps', 'set_fps', 'set_fps_sub');
+        }
+        s.items.push(item(G.t('back'), function () { var b = s.back || 0; capture = null; s.sub = ''; s.focus = b; build(); }, { icon: '◂' }));
+    }
+
+    /* Button mapping: pick a game action, press OK, then press the button you want (detected, not cycled). */
     function buildControls(s) {
         var b = G.settings.binds;
-        s.items.push({ label: G.t('set_controls'), head: true, sub: G.t('controls_sub') });
-        ['interact', 'attack', 'jump', 'sprint', 'map', 'menu'].forEach(function (fn) {
-            var f = function (d) { return function () {
-                var v = cycle(BUTTONS, b[fn], d);
-                if (fn === 'interact' && v === 'none') v = cycle(BUTTONS, v, d);   // the remote must always be able to interact
-                b[fn] = v; G.applySettings(); build();
-            }; };
-            s.items.push(item(G.t('fn_' + fn), f(1), { value: G.t('btn_' + b[fn]), left: f(-1), right: f(1) }));
+        FNS.forEach(function (fn) {
+            var waiting = capture && capture.fn === fn, shared = [];
+            FNS.forEach(function (f2) { if (f2 !== fn && b[f2] === b[fn] && b[fn] !== 'none') shared.push(G.t('fn_' + f2)); });
+            s.items.push(item(G.t('fn_' + fn), function () { startCapture(fn); }, {
+                value: waiting ? '⌛ ' + Math.ceil(capture.t) : G.t('btn_' + b[fn]),
+                sub: waiting ? G.t('press_now') : (shared.length ? G.t('shared_with', shared.join(', ')) + '  ·  ' : '') + G.t('press_to_change'),
+                wait: waiting
+            }));
         });
-        s.items.push(item(G.t('reset_controls'), function () { G.settings.binds = { interact: 'ok', attack: 'ok', jump: 'ok', sprint: 'run', map: 'cancel', menu: 'menu' }; G.applySettings(); build(); }));
-        s.items.push(item(G.t('back'), function () { s.sub = ''; s.focus = 0; build(); }));
+        s.items.push({ label: G.t('controls_sub'), head: true });
+        s.items.push(item(G.t('reset_controls'), function () { G.settings.binds = JSON.parse(JSON.stringify(G.DEFAULT_BINDS)); G.applySettings(); build(); G.ui.toast(G.t('reset_done')); }, { icon: '↺' }));
     }
+    function startCapture(fn) { capture = { fn: fn, armed: false, t: 6, shown: 6 }; build(); MyPC.announce(G.t('press_now')); }
+    function finishCapture(btn, dev) {
+        var fn = capture.fn; capture = null;
+        if (btn === 'none' && fn === 'interact') { G.ui.toast(G.t('interact_needed')); btn = null; }
+        if (btn) {
+            G.settings.binds[fn] = btn; G.applySettings(); G.audio.sfxSelect();
+            G.ui.toast(G.t('fn_' + fn) + '  →  ' + G.t('btn_' + btn) + (dev ? '  (' + G.t(/^pad/.test(dev) ? 'dev_pad' : dev === 'touch' ? 'dev_touch' : 'dev_keys') + ')' : ''));
+            if (btn !== 'ok' && (fn === 'interact' || fn === 'jump')) G.ui.toast(G.t('remote_warn'));
+        }
+        build();
+    }
+    U.frame = function (dt) {                               // every drawn frame, also on the title
+        if (!capture) return;
+        capture.t -= dt;
+        if (capture.t <= 0) { finishCapture(null); return; }
+        if (Math.ceil(capture.t) !== capture.shown) { capture.shown = Math.ceil(capture.t); build(); }
+    };
+
     function buildSystem(s) {
-        s.items.push(item(G.t('resume'), function () { U.close(); }));
-        s.items.push(item(G.t('savegame'), function () { G.saveGame(true); U.close(); }));
-        if (G.peekSave('manual')) s.items.push(item(G.t('loadmanual'), function () { U.choice(G.t('load_sure'), [G.t('yes'), G.t('no')], function (c) { if (c === 0) { U.close(); G.startGame('manual'); } }); }));
-        if (G.state.horse) s.items.push(item(G.t('whistle'), function () { U.close(); if (!G.agents.whistle()) U.toast(G.t('nohorse')); }));
-        s.items.push(item(G.t('totitle'), function () { G.saveGame(false); U.close(); G.toTitle(); }));
-        s.items.push(item(G.t('quit'), function () { G.saveGame(false); MyPC.exit(); }));
+        var c = G.coop;
+        s.items.push(item(G.t('resume'), function () { U.close(); }, { icon: '▶' }));
+        s.items.push(item(G.t('savegame'), function () { G.saveGame(true); U.close(); }, { icon: '⤒' }));
+        if (G.peekSave('manual') && !c.role) s.items.push(item(G.t('loadmanual'), function () { U.choice(G.t('load_sure'), [G.t('yes'), G.t('no')], function (k) { if (k === 0) { U.close(); G.startGame('manual'); } }); }, { icon: '⤓' }));
+        if (c.supported()) {
+            if (!c.role) s.items.push(item(G.t('coop_invite'), function () { U.close(); c.host(); }, { icon: '⚑', sub: G.t('coop_invite_sub') }));
+            else {
+                s.items.push({ label: G.t('coop_session'), head: true });
+                var p = c.partner;
+                if (p && p.ready) s.items.push({ label: '⚑  ' + p.name, value: '♥ ' + p.hearts + ' / ' + p.maxHearts, sub: G.t(c.role === 'host' ? 'coop_is_guest' : 'coop_is_host'), on: null });
+                else s.items.push({ label: G.t('coop_waiting'), dim: true, on: null, sub: G.t('coop_waiting_sub') });
+                s.items.push(item(G.t('coop_end'), function () {
+                    U.choice(G.t('coop_end_sure'), [G.t('yes'), G.t('no')], function (k) { if (k === 0) { c.leave(); if (screen) build(); } });
+                }, { icon: '✖' }));
+            }
+        }
+        if (G.state.horse && c.role !== 'guest') s.items.push(item(G.t('whistle'), function () { U.close(); if (!G.agents.whistle()) U.toast(G.t('nohorse')); }, { icon: '♞' }));
+        s.items.push(item(G.t('totitle'), function () { G.saveGame(false); U.close(); G.toTitle(); }, { icon: '⌂' }));
+        s.items.push(item(G.t('quit'), function () { G.saveGame(false); MyPC.exit(); }, { icon: '⏻' }));
     }
     function buildCook(s) {
-        el.tabs.innerHTML = ''; var h = document.createElement('span'); h.className = 'title'; h.textContent = G.t('cooking'); el.tabs.appendChild(h);
+        header(G.t('cooking'));
         var S = G.state;
         for (var k in S.inv) {
             var it = G.ITEMS[k]; if (!it || it.kind !== 'raw') continue;
@@ -418,6 +557,13 @@
         ctx.save(); ctx.translate(x, y); ctx.rotate(-P.ry + Math.PI / 2);
         ctx.fillStyle = '#ffe14d'; ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
         ctx.beginPath(); ctx.moveTo(0, -16); ctx.lineTo(11, 12); ctx.lineTo(0, 6); ctx.lineTo(-11, 12); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+        var fr = G.coop.partner;
+        if (fr && fr.ready) {
+            ctx.save(); ctx.translate(toPx(fr.x), toPx(fr.z)); ctx.rotate(-fr.ry + Math.PI / 2);
+            ctx.fillStyle = '#ff7a5c'; ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(0, -16); ctx.lineTo(11, 12); ctx.lineTo(0, 6); ctx.lineTo(-11, 12); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+            ctx.font = 'bold 24px Arial'; ctx.fillStyle = '#ffd38a'; ctx.fillText(fr.name, toPx(fr.x), toPx(fr.z) - 30);
+        }
         var s = screen, info = document.getElementById('mapinfo');
         if (s.focus >= 0) {
             var cx = toPx(cur.x), cy = toPx(cur.z);
@@ -431,7 +577,17 @@
     }
 
     /* ---------------- input routing (returns true when the UI used the action) ---------------- */
-    U.input = function (action, pressed, repeat) {
+    var BTN_OF = { confirm: 'ok', jump: 'ok', run: 'run', cancel: 'cancel', menu: 'menu' };
+    U.input = function (action, pressed, repeat, dev) {
+        if (capture && screen) {                                       // waiting for the button to map
+            if (!pressed) { if (action === 'confirm' || action === 'jump') capture.armed = true; return true; }
+            if (repeat) return true;
+            if (action === 'up' || action === 'down') { capture = null; G.audio.sfxMenu(); build(); return true; }
+            if (action === 'left' || action === 'right') { finishCapture('none', dev); return true; }
+            if (!capture.armed && BTN_OF[action] === 'ok') return true;   // the OK press that started it
+            if (BTN_OF[action]) finishCapture(BTN_OF[action], dev);
+            return true;
+        }
         if (!pressed) return U.isOpen();
         if (dlg) {
             if (action === 'up' && dlg.choices) { dlg.focus = (dlg.focus + dlg.choices.length - 1) % dlg.choices.length; dlgFocus(); G.audio.sfxMenu(); }
@@ -441,18 +597,29 @@
             return true;
         }
         if (!screen) return false;
-        var s = screen;
+        var s = screen, rtl = document.documentElement.dir === 'rtl';
         if (action === 'menu' || action === 'cancel') {
             if (s.kind === 'title') return true;
-            if (s.sub) { s.sub = ''; s.focus = 0; build(); return true; }
+            if (s.kind === 'diff') { U.openTitle(); return true; }
+            if (s.sub) { var b = s.back || 0; s.sub = ''; s.focus = b; build(); return true; }
             if (s.fromTitle) { U.openTitle(); return true; }
             U.close(); return true;
         }
         if (action === 'jump') return true;                        // OK sends confirm and jump: use confirm only
+        /* cards (difficulty): every arrow moves */
+        if (s.cards) {
+            var n0 = s.focus;
+            if (action === 'left' || action === 'up') s.focus = Math.max(0, s.focus + (rtl && action === 'left' ? 1 : -1));
+            else if (action === 'right' || action === 'down') s.focus = Math.min(s.items.length - 1, s.focus + (rtl && action === 'right' ? -1 : 1));
+            else if (action === 'confirm') { G.audio.sfxSelect(); s.items[s.focus].on(); return true; }
+            s.focus = Math.max(0, Math.min(s.items.length - 1, s.focus));
+            if (s.focus !== n0) { G.audio.sfxMenu(); render(); }
+            return true;
+        }
         /* the tab row */
         if (s.kind === 'game' && s.focus < 0) {
             if (action === 'left' || action === 'right') {
-                var i = TABS.indexOf(s.tab) + ((action === 'right') !== document.documentElement.dir.startsWith('rtl') ? 1 : -1);
+                var i = TABS.indexOf(s.tab) + ((action === 'right') !== rtl ? 1 : -1);
                 s.tab = TABS[(i + TABS.length) % TABS.length]; s.sub = ''; G.audio.sfxMenu(); build();
             } else if (action === 'down' || action === 'confirm') {
                 s.focus = s.tab === 'map' ? 0 : firstFocus(s); if (s.tab !== 'map' && s.focus < 0) s.focus = -1;
@@ -479,19 +646,18 @@
             return true;
         }
         /* lists */
-        var it = s.items[s.focus];
+        var it = s.items[s.focus], tabs = s.kind === 'game' && !s.fromTitle;
         if (action === 'up' || action === 'down') {
             var d = action === 'up' ? -1 : 1, n = s.focus;
             for (var k = 0; k < s.items.length; k++) {
                 n += d;
-                if (n < 0) { if (s.kind === 'game') { s.focus = -1; render(); G.audio.sfxMenu(); return true; } n = s.items.length - 1; }
+                if (n < 0) { if (tabs) { s.focus = -1; render(); G.audio.sfxMenu(); return true; } n = s.items.length - 1; }
                 if (n >= s.items.length) n = 0;
                 if (!s.items[n].head) break;
             }
             s.focus = n; G.audio.sfxMenu(); render();
-        } else if (action === 'left' && it && it.left) it.left();
-        else if (action === 'right' && it && it.right) it.right();
-        else if (action === 'left' || action === 'right') { if (s.kind === 'game') { s.focus = -1; U.input(action, true, false); } }
+        } else if ((action === 'left' || action === 'right') && it && it.left) (action === 'left' ? it.left : it.right)();
+        else if (action === 'left' || action === 'right') { if (tabs) { s.focus = -1; U.input(action, true, false); } }
         else if (action === 'confirm' && it && it.on) { G.audio.sfxSelect(); it.on(); }
         return true;
     };
