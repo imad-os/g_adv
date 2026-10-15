@@ -82,7 +82,7 @@
         var g = new T.Group(); g.name = 'fire';
         for (var i = 0; i < 5; i++) { var a = i / 5 * 6.28; g.add(box(0.4, 0.3, 0.4, 0x666666, Math.cos(a) * 0.8, 0.15, Math.sin(a) * 0.8)); }
         g.add(box(0.9, 0.2, 0.2, 0x5a3a1a, 0, 0.2, 0), box(0.2, 0.2, 0.9, 0x5a3a1a, 0, 0.3, 0));
-        var flame = cone(0.35, 0.9, 0xff8c1a, 0, 0.8, 0, 5); flame.name = 'flame'; g.add(flame);
+        var flame = new T.Mesh(new T.ConeGeometry(0.35, 0.9, 5), new T.MeshBasicMaterial({ color: 0xff8c1a })); flame.position.set(0, 0.8, 0); flame.name = 'flame'; g.add(flame);
         g.position.set(x, y, z); return g;
     }
     C.buildPoi = function (p) {
@@ -96,8 +96,9 @@
         } else if (p.type === 'beacon') {
             var tower = new T.Group();
             tower.add(cyl(3.2, 4, 3, 0x4f5660, 0, y + 1.5, 0, 8), cyl(1.6, 2.2, 26, 0x5b6470, 0, y + 16, 0, 6));
-            var top = new T.Mesh(new T.OctahedronGeometry(2.2, 0), new T.MeshLambertMaterial({ color: 0x3a4a5a, emissive: 0x000000 }));
-            top.position.set(0, y + 31, 0); top.name = 'core'; tower.add(top);
+            var top = new T.Mesh(new T.OctahedronGeometry(1.1, 0), new T.MeshLambertMaterial({ color: 0x3a4a5a, emissive: 0x000000 }));
+            top.position.set(0, y + 31.6, 0); top.name = 'core'; tower.add(top);
+            tower.add(cyl(4.2, 3.6, 0.6, 0x4f5660, 0, y + 29.7, 0, 8));                  // the platform you stand on
             g.add(tower);
         } else if (p.type === 'hollow') {
             for (i = 0; i < 8; i++) { var b = i / 8 * 6.28; g.add(cyl(0.6, 0.8, 3 + (i % 3), 0x6b6f78, Math.cos(b) * 7, y + 1.5, Math.sin(b) * 7, 5)); }
@@ -107,6 +108,9 @@
         } else if (p.type === 'camp') {
             for (i = 0; i < 3; i++) { var c = i / 3 * 6.28; g.add(cone(2.4, 2.6, 0x5a4a3a, Math.cos(c) * 9, y + 1.3, Math.sin(c) * 9, 4)); }
             g.add(campfire(0, y, 0));
+            var chest = new T.Group(); chest.name = 'chest';
+            chest.add(box(1.4, 0.8, 0.9, 0x8b5a2b, 0, 0.4, 0), box(1.5, 0.3, 1, 0xc9a227, 0, 0.9, 0));
+            chest.position.set(0, y, 5); g.add(chest);
             for (i = 0; i < 10; i++) { var d = i / 10 * 6.28; g.add(box(0.3, 2, 0.3, 0x6b4a2a, Math.cos(d) * 16, y + 1, Math.sin(d) * 16)); }
         } else if (p.type === 'ruin') {
             for (i = 0; i < 12; i++) { var e = i / 12 * 6.28; g.add(cyl(1, 1.2, 6 + (i % 4) * 2, 0x55585e, Math.cos(e) * 22, y + 4, Math.sin(e) * 22, 6)); }

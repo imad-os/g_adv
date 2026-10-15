@@ -1,7 +1,26 @@
-# g_adv
+# Echoes of Ardalia (g_adv)
 
-A game for **My PC** (Samsung TV desktop app). See `CLAUDE.md` and the
+An open-world, low-poly 3D adventure for **My PC** (Samsung TV desktop app). See `CLAUDE.md` and the
 [My PC guide](https://raw.githubusercontent.com/imad-os/g/main/sdk/GUIDE.md).
 
-Play standalone: open `index.html` in Chrome, arrows + Enter, Esc pauses.
-App Store address: https://imad-os.github.io/g_adv/
+App Store address: **https://imad-os.github.io/g_adv/**
+
+Play standalone: open `index.html` in Chrome. Arrows move (◀ ▶ turn, ▲ forward, hold ▲ to run),
+Enter/Space = OK (talk, pick up, attack, jump; hold in the air to glide; hold while standing still for the menu),
+Shift = sprint, Backspace = map, Esc pauses.
+
+## What is in it
+- Procedural 1.5 km × 1.5 km world streamed in chunks: plains, forests, mountains, desert, beaches, snow, lakes and sea.
+- Climb any slope, glide with the wind cloak, swim, sprint: one stamina wheel.
+- Hearts, hunger, cooking at campfires, weapons that break, a tamable horse with spurs.
+- Day/night (24 real minutes per day), four seasons, rain and snow, a Red Moon every 7th night that brings everything back.
+- 8 main quests and 12 side quests, 6 beacons (map reveal + fast travel), 6 Hollow trials, 5 Grubber camps with chests,
+  a boss, levels, achievements and a daily gift.
+- AI: villagers with daily schedules who flee monsters, prey that flees, boars that fight back, wolf packs at night,
+  Grubbers with sight/hearing suspicion, call-for-help and attack-turn tactics, a two-move boss.
+- Quality Low / Medium / High (Settings), full button mapping, English, French, Arabic and Moroccan Darija.
+
+## Owner config (App Store Manager → Config)
+`dayMinutes`, `difficulty`, `quality` (`low|medium|high`), `lang` (`en|fr|ar|ary`), `voice`, `voiceBase`, `voiceTimeoutMs`, `startHearts`.
+
+`lib/three.min.js` is three.js r160 (MIT, see `lib/LICENSE-three.txt`).

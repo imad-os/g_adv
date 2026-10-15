@@ -1,12 +1,12 @@
 {
   "mypc": 1,
   "id": "g-adv",
-  "name": "Advanced Game",
-  "description": "An advanced game for My PC",
+  "name": "Echoes of Ardalia",
+  "description": "Open-world low-poly adventure: climb, glide, ride, cook and free Ardalia from the Red Moon",
   "type": "game",
   "entry": "index.html",
   "icon": "icon.svg",
-  "version": "0.2.0",
-  "scores": true,
-  "config": { "speed": 1, "lang": "" }
+  "version": "1.0.0",
+  "scores": false,
+  "config": { "dayMinutes": 24, "voice": true, "voiceBase": "voices/", "voiceTimeoutMs": 1000, "difficulty": 1, "quality": "", "lang": "" }
 }

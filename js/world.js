@@ -31,6 +31,14 @@
         return h;
     }
     W.heightAt = heightAt;
+    /* every place sits at the natural height of its ground (at least a little above the sea) */
+    (function () {
+        for (var i = 0; i < G.POIS.length; i++) {
+            var p = G.POIS[i], sum = rawHeight(p.x, p.z), n = 1;
+            for (var a = 0; a < 6.28; a += 0.785) { sum += rawHeight(p.x + Math.cos(a) * p.r * 0.6, p.z + Math.sin(a) * p.r * 0.6); n++; }
+            p.y = Math.max(3, Math.round(sum / n));
+        }
+    })();
     /* slope 0..1 (sin of the angle) and the uphill direction, written into out {s, nx, nz} */
     W.slopeAt = function (x, z, out) {
         var e = 0.6, hx = heightAt(x + e, z) - heightAt(x - e, z), hz = heightAt(x, z + e) - heightAt(x, z - e);
@@ -90,7 +98,7 @@
         mesh.frustumCulled = false;
         mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);
         for (var i = 0; i < cap; i++) mesh.setMatrixAt(i, ZERO);
-        if (mat.vertexColors === false || name === 'tree' || name === 'rock' || name === 'item') {
+        if (name === 'tree' || name === 'rock' || name === 'item') {
             mesh.instanceColor = new T.InstancedBufferAttribute(new Float32Array(cap * 3), 3);
             mesh.instanceColor.setUsage(T.DynamicDrawUsage);
         }
@@ -134,6 +142,7 @@
 
     W.init = function (sc, quality) {
         scene = sc; Q = quality; seg = Q.seg;
+        chunkPool = []; live = {}; pendingRecolor = []; props = {}; items.length = 0; itemPool = []; loadQueue.length = 0; lastCx = 1e9; lastCz = 1e9;
         /* shared index + uv for every chunk */
         var n = (seg + 1) * (seg + 1); index = new Uint16Array(seg * seg * 6); uvs = new Float32Array(n * 2);
         var k = 0;
@@ -152,7 +161,7 @@
             var mesh = new T.Mesh(g, mat);
             mesh.visible = false; mesh.receiveShadow = Q.shadows; mesh.frustumCulled = true;
             scene.add(mesh);
-            chunkPool.push({ mesh: mesh, key: null, cx: 0, cz: 0, tree: [], rock: [], grass: [], items: [] });
+            chunkPool.push({ mesh: mesh, key: null, cx: 0, cz: 0, tree: [], treePos: [], rock: [], grass: [], items: [] });
         }
         var area = count;
         makePool('tree', treeGeometry(), new T.MeshLambertMaterial({ vertexColors: true }), Math.round(area * 26 * Q.trees));
@@ -201,7 +210,7 @@
             if (!ok || h < 1.5 || W.slopeAt(x, z, slopeOut) > 0.6 || nearPoi(x, z)) continue;
             var sz = rng.range(0.8, 1.4), v = rng.range(0.85, 1.15);
             var id = place('tree', x, h - 0.2, z, rng.range(0, 6.28), sz, leaf[0] * v, leaf[1] * v, leaf[2] * v);
-            if (id >= 0) slot.tree.push(id);
+            if (id >= 0) { slot.tree.push(id); slot.treePos.push(x, z, 0.45 * sz); }
         }
         for (i = 0; i < nRocks; i++) {
             x = ox + rng.range(1, CH - 1); z = oz + rng.range(1, CH - 1); h = heightAt(x, z);
@@ -242,20 +251,26 @@
     }
     /* drop something on the ground (loot) - belongs to no chunk, disappears when far */
     W.dropItem = function (type, x, z) { var it = spawnItem(null, type, x, heightAt(x, z) + 0.4, z, ''); if (it) flush('item'); return it; };
-    W.takeItem = function (it) {
+    function removeItem(it) {
         if (!it.on) return;
-        it.on = false; unplace('item', it.inst); flush('item');
-        if (it.key) G.state.taken[it.key] = 1;
+        it.on = false; unplace('item', it.inst);
         var i = items.indexOf(it); if (i >= 0) { items[i] = items[items.length - 1]; items.pop(); }
         if (it.chunk) { i = it.chunk.items.indexOf(it); if (i >= 0) it.chunk.items.splice(i, 1); }
+        it.chunk = null;
+    }
+    /* the player picked it up: remember it so it does not grow back until a red night */
+    W.takeItem = function (it) {
+        if (!it.on) return;
+        if (it.key) G.state.taken[it.key] = 1;
+        removeItem(it); flush('item');
     };
     function unloadChunk(slot) {
         var i;
         for (i = 0; i < slot.tree.length; i++) unplace('tree', slot.tree[i]);
         for (i = 0; i < slot.rock.length; i++) unplace('rock', slot.rock[i]);
         for (i = 0; i < slot.grass.length; i++) unplace('grass', slot.grass[i]);
-        for (i = slot.items.length - 1; i >= 0; i--) { var it = slot.items[i]; it.chunk = null; W.takeItem(it); delete G.state.taken[it.key]; }
-        slot.tree.length = 0; slot.rock.length = 0; slot.grass.length = 0; slot.items.length = 0;
+        for (i = slot.items.length - 1; i >= 0; i--) removeItem(slot.items[i]);
+        slot.tree.length = 0; slot.treePos.length = 0; slot.rock.length = 0; slot.grass.length = 0; slot.items.length = 0;
         slot.mesh.visible = false; delete live[slot.key]; slot.key = null;
         flush('tree'); flush('rock'); flush('grass'); flush('item');
     }
@@ -265,6 +280,26 @@
         return false;
     }
     W.nearPoi = nearPoi;
+    /* Push a circle (x, z, radius r) out of tree trunks in the chunk under it. Writes into out {x, z}. */
+    W.pushOutTrees = function (x, z, r, out) {
+        out.x = x; out.z = z;
+        var slot = live[Math.floor(x / CH) + ',' + Math.floor(z / CH)]; if (!slot) return out;
+        var tp = slot.treePos;
+        for (var i = 0; i < tp.length; i += 3) {
+            var dx = out.x - tp[i], dz = out.z - tp[i + 1], rr = r + tp[i + 2], d2 = dx * dx + dz * dz;
+            if (d2 < rr * rr && d2 > 1e-6) { var d = Math.sqrt(d2); out.x = tp[i] + dx / d * rr; out.z = tp[i + 1] + dz / d * rr; }
+        }
+        return out;
+    };
+    /* nearest dry, gentle ground to (x, z), searched in a spiral; writes into out {x, z} */
+    W.findLand = function (x, z, out) {
+        for (var r = 0; r < 160; r += 6) for (var a = 0; a < 6.28; a += r ? 3 / r : 7) {
+            var tx = x + Math.cos(a) * r, tz = z + Math.sin(a) * r, h = heightAt(tx, tz);
+            if (h > 2 && h < 70 && W.slopeAt(tx, tz, slopeOut) < 0.45) { out.x = tx; out.z = tz; return out; }
+        }
+        out.x = x; out.z = z; return out;
+    };
+    W.chunkReady = function (x, z) { return !!live[Math.floor(x / CH) + ',' + Math.floor(z / CH)]; };
 
     var lastCx = 1e9, lastCz = 1e9, loadQueue = [];
     /* Called every frame with the player position: loads at most one chunk per frame. */
@@ -300,7 +335,7 @@
             var sl = pendingRecolor.pop(); if (sl.key) recolor(sl);
         }
         /* loose loot far away disappears */
-        for (i = items.length - 1; i >= 0; i--) { var it = items[i]; if (!it.chunk && ((it.x - px) * (it.x - px) + (it.z - pz) * (it.z - pz)) > 150 * 150) W.takeItem(it); }
+        for (i = items.length - 1; i >= 0; i--) { var it = items[i]; if (!it.chunk && ((it.x - px) * (it.x - px) + (it.z - pz) * (it.z - pz)) > 150 * 150) { removeItem(it); flush('item'); } }
         water.position.x = px; water.position.z = pz;
     };
     function recolor(slot) {
@@ -321,11 +356,13 @@
         props.grass.mesh.material.color.setRGB(SEASON_GRASS[s][0] * 1.1, SEASON_GRASS[s][1] * 1.1, SEASON_GRASS[s][2] * 1.1);
     };
     /* Red night: everything taken grows back. Reload every chunk by forgetting them. */
-    W.respawnAll = function () {
-        G.state.taken = {};
+    W.reload = function () {
         for (var i = 0; i < chunkPool.length; i++) if (chunkPool[i].key) unloadChunk(chunkPool[i]);
+        for (i = items.length - 1; i >= 0; i--) removeItem(items[i]);    // loose loot
+        flush('item');
         lastCx = 1e9;
     };
+    W.respawnAll = function () { G.state.taken = {}; W.reload(); };
 
     /* ---------------- sky, sun and time of day ---------------- */
     var SKY = [[0.05, 0.06, 0.16], [0.95, 0.6, 0.35], [0.62, 0.77, 0.91], [0.98, 0.55, 0.3]];  // night, dawn, day, dusk

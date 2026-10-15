@@ -21,8 +21,30 @@
         shard:     { kind: 'material', color: 0x9be7ff },
         windcloak: { kind: 'key', color: 0x7fd4ff },
         letter:    { kind: 'key', color: 0xfff1c1 },
-        core:      { kind: 'key', color: 0xffd23f }
+        core:      { kind: 'key', color: 0xffd23f },
+        orb:       { kind: 'key', color: 0xfff27a }          // from Hollows: 4 orbs = 1 heart or 1 stamina at the Elmbrook shrine
     };
+    G.MAX_WEAPONS = 8;
+
+    /* Achievements: small goals that keep giving the player a reason for "one more". */
+    G.ACHIEVEMENTS = [
+        { id: 'firststep', stat: 'quests', n: 1 },
+        { id: 'quest5', stat: 'quests', n: 5 },
+        { id: 'quest15', stat: 'quests', n: 15 },
+        { id: 'hunter', stat: 'kills', n: 10 },
+        { id: 'slayer', stat: 'kills', n: 50 },
+        { id: 'chef', stat: 'cooked', n: 10 },
+        { id: 'gatherer', stat: 'picked', n: 50 },
+        { id: 'climber', stat: 'climbed', n: 200 },
+        { id: 'glider', stat: 'glided', n: 500 },
+        { id: 'rider', stat: 'rode', n: 1000 },
+        { id: 'beacons', stat: 'beacons', n: 6 },
+        { id: 'hollows', stat: 'hollows', n: 6 },
+        { id: 'breaker', stat: 'broken', n: 10 },
+        { id: 'survivor', stat: 'redNights', n: 1 },
+        { id: 'level5', stat: 'level', n: 5 },
+        { id: 'level10', stat: 'level', n: 10 }
+    ];
     /* cooking: sorted ingredient list -> result */
     G.RECIPES = [
         { needs: ['apple'], gives: 'roastapple' },
@@ -36,10 +58,10 @@
     G.POIS = [
         { id: 'elmbrook',  type: 'village', x: 0,    z: 40,   y: 12, r: 60 },
         { id: 'saltmere',  type: 'village', x: -520, z: 380,  y: 4,  r: 55 },
-        { id: 'highcairn', type: 'village', x: 420,  z: -480, y: 95, r: 50 },
+        { id: 'highcairn', type: 'village', x: 430,  z: 110,  y: 0,  r: 50 },
         { id: 'b1', type: 'beacon', x: 110,  z: -60,  y: 30,  r: 18 },
         { id: 'b2', type: 'beacon', x: -400, z: 250,  y: 24,  r: 18 },
-        { id: 'b3', type: 'beacon', x: 470,  z: -380, y: 120, r: 18 },
+        { id: 'b3', type: 'beacon', x: 490,  z: 30,   y: 0,  r: 18 },
         { id: 'b4', type: 'beacon', x: -300, z: -420, y: 60,  r: 18 },
         { id: 'b5', type: 'beacon', x: 520,  z: 420,  y: 40,  r: 18 },
         { id: 'b6', type: 'beacon', x: 40,   z: 600,  y: 18,  r: 18 },
