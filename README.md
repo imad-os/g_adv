@@ -26,7 +26,9 @@ Shift = sprint, Backspace = map, Esc pauses.
 - Settings › How to play: the story, gameplay and how to progress, in every language.
 - Settings in six sections: Graphics (quality Auto/Low/Medium/High from My PC's tier, view distance, grass, shadows,
   render resolution, FPS counter), Gameplay, Camera (distance, height, field of view, shake), Audio, Interface (HUD size,
-  clock, FPS) and Button mapping: press OK on an action, then press the button you want (detected, 6 s, ◀ ▶ = no button).
+  clock, FPS) and Button mapping: press OK on an action, then press any button within 5 s (detected; nothing pressed = unchanged).
+  Every gamepad button can be used (L, R, ZL, ZR, stick presses): `js/pad.js` reads the pad through the Gamepad API,
+  because My PC only forwards A, B/X/Y (as one) and Start/Select; it falls back to the SDK actions when the pad is not readable.
 - English, French, Arabic and Moroccan Darija.
 
 ## Owner config (App Store Manager → Config)

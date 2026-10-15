@@ -85,14 +85,14 @@
         if (G.dead) return true;
         if (mount) {
             if (fn === 'sprint') { if (spurs > 0 && !tame) { spurs--; spurT = 1.4; G.audio.sfxHorse(); } return true; }
-            if (fn === 'attack') { if (G.agents.nearestEnemy(P.pos, 4.5, P.ry, 1.4) || G.binds.attack !== 'ok') { swing(); return true; } return false; }
+            if (fn === 'attack') { if (G.agents.nearestEnemy(P.pos, 4.5, P.ry, 1.4) || !G.input.shared('attack', 'interact')) { swing(); return true; } return false; }
             if (fn === 'interact' || fn === 'jump') { if (!tame && rideSpeed < 3) dismount(); return true; }
             return false;
         }
         if (fn === 'interact') { if (G.interactTarget && mode !== 'air' && mode !== 'glide') { G.interact(G.interactTarget); return true; } return false; }
         if (fn === 'attack') {
             if (mode !== 'ground') return false;
-            if (G.binds.attack !== G.binds.jump || G.agents.nearestEnemy(P.pos, 3.4, P.ry, 1.2)) { swing(); return true; }
+            if (!G.input.shared('attack', 'jump') || G.agents.nearestEnemy(P.pos, 3.4, P.ry, 1.2)) { swing(); return true; }
             return false;
         }
         if (fn === 'jump') {

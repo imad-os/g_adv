@@ -414,36 +414,51 @@
         s.items.push(item(G.t('back'), function () { var b = s.back || 0; capture = null; s.sub = ''; s.focus = b; build(); }, { icon: '◂' }));
     }
 
-    /* Button mapping: pick a game action, press OK, then press the button you want (detected, not cycled). */
+    /* Button mapping: pick a game action, press OK, then press any button within 5 s (detected, not cycled).
+     * Each action has a gamepad button (every button: L, R, ZL, ZR, stick presses...) and a remote / keyboard button. */
+    var capturedAt = 0;
     function buildControls(s) {
-        var b = G.settings.binds;
+        var b = G.settings.binds, pb = G.settings.padBinds;
+        s.items.push({ label: G.t('map_cols'), head: true });
         FNS.forEach(function (fn) {
             var waiting = capture && capture.fn === fn, shared = [];
-            FNS.forEach(function (f2) { if (f2 !== fn && b[f2] === b[fn] && b[fn] !== 'none') shared.push(G.t('fn_' + f2)); });
+            FNS.forEach(function (f2) { if (f2 !== fn && pb[f2] === pb[fn] && pb[fn] >= 0) shared.push(G.t('fn_' + f2)); });
             s.items.push(item(G.t('fn_' + fn), function () { startCapture(fn); }, {
-                value: waiting ? '⌛ ' + Math.ceil(capture.t) : G.t('btn_' + b[fn]),
-                sub: waiting ? G.t('press_now') : (shared.length ? G.t('shared_with', shared.join(', ')) + '  ·  ' : '') + G.t('press_to_change'),
-                wait: waiting
+                value: waiting ? '⌛ ' + Math.ceil(capture.t) : G.pad.name(pb[fn]) + '   |   ' + G.t('btn_' + b[fn]),
+                sub: waiting ? G.t('press_now') : (shared.length ? G.t('shared_with', shared.join(', ')) + '  ·  ' : '') + G.t(fn === 'interact' ? 'press_to_change1' : 'press_to_change'),
+                wait: waiting,
+                clr: fn === 'interact' ? null : function () { pb[fn] = -1; G.applySettings(); G.audio.sfxMenu(); build(); }
             }));
         });
         s.items.push({ label: G.t('controls_sub'), head: true });
-        s.items.push(item(G.t('reset_controls'), function () { G.settings.binds = JSON.parse(JSON.stringify(G.DEFAULT_BINDS)); G.applySettings(); build(); G.ui.toast(G.t('reset_done')); }, { icon: '↺' }));
+        s.items.push(item(G.t('reset_controls'), function () {
+            G.settings.binds = JSON.parse(JSON.stringify(G.DEFAULT_BINDS)); G.settings.padBinds = JSON.parse(JSON.stringify(G.pad.DEFAULT));
+            G.applySettings(); build(); G.ui.toast(G.t('reset_done'));
+        }, { icon: '↺' }));
     }
-    function startCapture(fn) { capture = { fn: fn, armed: false, t: 6, shown: 6 }; build(); MyPC.announce(G.t('press_now')); }
-    function finishCapture(btn, dev) {
-        var fn = capture.fn; capture = null;
-        if (btn === 'none' && fn === 'interact') { G.ui.toast(G.t('interact_needed')); btn = null; }
+    function startCapture(fn) { capture = { fn: fn, armed: false, t: 5, shown: 5, since: performance.now() }; build(); MyPC.announce(G.t('press_now')); }
+    U.capturing = function () { return !!(capture && screen); };
+    U.padCapture = function (k) {                           // a gamepad button read directly
+        if (!capture || performance.now() - capture.since < 250) return;      // the press that started it
+        if (k >= 12 && k <= 16) return;                     // the d-pad moves, Home belongs to the system
+        var fn = capture.fn; capture = null; capturedAt = performance.now();
+        G.settings.padBinds[fn] = k; G.applySettings(); G.audio.sfxSelect();
+        G.ui.toast(G.t('fn_' + fn) + '  →  ' + G.pad.name(k) + '  (' + G.t('dev_pad') + ')');
+        build();
+    };
+    function finishCapture(btn, dev) {                      // a button that came through My PC (remote, keyboard, touch)
+        var fn = capture.fn; capture = null; capturedAt = performance.now();
         if (btn) {
             G.settings.binds[fn] = btn; G.applySettings(); G.audio.sfxSelect();
             G.ui.toast(G.t('fn_' + fn) + '  →  ' + G.t('btn_' + btn) + (dev ? '  (' + G.t(/^pad/.test(dev) ? 'dev_pad' : dev === 'touch' ? 'dev_touch' : 'dev_keys') + ')' : ''));
             if (btn !== 'ok' && (fn === 'interact' || fn === 'jump')) G.ui.toast(G.t('remote_warn'));
-        }
+        } else G.ui.toast(G.t('capture_none'));
         build();
     }
     U.frame = function (dt) {                               // every drawn frame, also on the title
         if (!capture) return;
         capture.t -= dt;
-        if (capture.t <= 0) { finishCapture(null); return; }
+        if (capture.t <= 0) { finishCapture(null); return; }   // nothing pressed in 5 s: keep the old button
         if (Math.ceil(capture.t) !== capture.shown) { capture.shown = Math.ceil(capture.t); build(); }
     };
 
@@ -583,15 +598,15 @@
     /* ---------------- input routing (returns true when the UI used the action) ---------------- */
     var BTN_OF = { confirm: 'ok', jump: 'ok', run: 'run', cancel: 'cancel', menu: 'menu' };
     U.input = function (action, pressed, repeat, dev) {
-        if (capture && screen) {                                       // waiting for the button to map
-            if (!pressed) { if (action === 'confirm' || action === 'jump') capture.armed = true; return true; }
-            if (repeat) return true;
-            if (action === 'up' || action === 'down') { capture = null; G.audio.sfxMenu(); build(); return true; }
-            if (action === 'left' || action === 'right') { finishCapture('none', dev); return true; }
+        if (capture && screen) {                                       // waiting for the button to map: only time cancels
+            if (!pressed) { if (BTN_OF[action] === 'ok') capture.armed = true; return true; }
+            if (repeat || !BTN_OF[action]) return true;                  // arrows do nothing while waiting
+            if (dev && dev.indexOf('pad') === 0 && G.pad.live) return true;   // the gamepad is read directly (padCapture)
             if (!capture.armed && BTN_OF[action] === 'ok') return true;   // the OK press that started it
-            if (BTN_OF[action]) finishCapture(BTN_OF[action], dev);
+            finishCapture(BTN_OF[action], dev);
             return true;
         }
+        if (pressed && dev && dev.indexOf('pad') === 0 && performance.now() - capturedAt < 400 && BTN_OF[action]) return true;   // B sends run + cancel: the 2nd must not leave
         if (!pressed) return U.isOpen();
         if (dlg) {
             if (action === 'up' && dlg.choices) { dlg.focus = (dlg.focus + dlg.choices.length - 1) % dlg.choices.length; dlgFocus(); G.audio.sfxMenu(); }
@@ -661,6 +676,7 @@
             }
             s.focus = n; G.audio.sfxMenu(); render();
         } else if ((action === 'left' || action === 'right') && it && it.left) (action === 'left' ? it.left : it.right)();
+        else if ((action === 'left' || action === 'right') && it && it.clr) it.clr();
         else if (action === 'left' || action === 'right') { if (tabs) { s.focus = -1; U.input(action, true, false); } }
         else if (action === 'confirm' && it && it.on) { G.audio.sfxSelect(); it.on(); }
         return true;

@@ -577,3 +577,27 @@ Object.assign(window.TEXT.ary, {
     how_controls_t: 'التحكم', how_controls: 'التيليكوموند: الفليشات باش تمشي وتدور، OK باش تهضر وتهز وتضرب وتنقز، شد OK فالسما باش تطير، وشدو وانت واقف باش تحل المونيو. المانيطة فيها بوطونات زايدين للجري والخريطة والمونيو؛ بدلهم من الإعدادات › ترتيب البوطونات.',
     how_tips_t: 'نصائح', how_tips: 'طيب مرقة قبل شي قتال كبير. خلي سلاح احتياطي. ارتاح عند عافية الدوار باش تفوت الليل. صفر لعودك من المونيو › النظام. اللعبة كتحفظ راسها كل دقيقة.'
 });
+
+/* 1.3.0: every gamepad button can be mapped, detection ends by itself after 5 s */
+Object.assign(window.TEXT.en, {
+    map_cols: 'Action · gamepad  |  remote / keyboard', press_to_change: 'OK to change  ·  ◀ ▶ remove the gamepad button', press_to_change1: 'OK to change',
+    press_now: 'Press any button now: gamepad (L, R, ZL, ZR… all of them), remote or keyboard', capture_none: 'Nothing pressed: unchanged',
+    hint_capture: 'Press the button you want · it stops by itself after 5 s'
+});
+Object.assign(window.TEXT.fr, {
+    map_cols: 'Action · manette  |  télécommande / clavier', press_to_change: 'OK pour changer  ·  ◀ ▶ retirer le bouton manette', press_to_change1: 'OK pour changer',
+    press_now: 'Appuyez sur un bouton : manette (L, R, ZL, ZR… tous), télécommande ou clavier', capture_none: 'Rien appuyé : inchangé',
+    hint_capture: 'Appuyez sur le bouton voulu · arrêt automatique après 5 s'
+});
+Object.assign(window.TEXT.ar, {
+    map_cols: 'الإجراء · يد التحكم  |  جهاز التحكم / لوحة المفاتيح', press_to_change: 'OK للتغيير  ·  ◀ ▶ إزالة زر يد التحكم', press_to_change1: 'OK للتغيير',
+    press_now: 'اضغط أي زر الآن: يد التحكم (L وR وZL وZR… كلها)، جهاز التحكم أو لوحة المفاتيح', capture_none: 'لم يُضغط شيء: بدون تغيير',
+    hint_capture: 'اضغط الزر الذي تريده · يتوقف وحده بعد 5 ثوانٍ'
+});
+Object.assign(window.TEXT.ary, {
+    map_cols: 'الحركة · المانيطة  |  التيليكوموند / الكلافيي', press_to_change: 'OK باش تبدل  ·  ◀ ▶ حيد بوطون المانيطة', press_to_change1: 'OK باش تبدل',
+    press_now: 'ورك على أي بوطون دابا: المانيطة (L وR وZL وZR… كاملين)، التيليكوموند ولا الكلافيي', capture_none: 'ما تورك والو: بقا كيف كان',
+    hint_capture: 'ورك على البوطون اللي بغيتي · كيوقف بوحدو من بعد 5 ثواني'
+});
+/* the second column of the mapping is the remote / keyboard only (the gamepad has its own column) */
+['en', 'fr', 'ar', 'ary'].forEach(function (l) { Object.assign(window.TEXT[l], { btn_ok: 'OK / Enter', btn_run: 'Shift', btn_cancel: 'Esc / ⌫', btn_menu: '☰' }); });

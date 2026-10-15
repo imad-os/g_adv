@@ -193,7 +193,8 @@
         autoSprint: true, invertTurn: false, questMarker: true, autoEquip: true,
         camDist: 1, camHeight: 1, fov: 60, shake: true,
         hudScale: 1, fps: false, clock24: true,
-        binds: JSON.parse(JSON.stringify(G.DEFAULT_BINDS))
+        binds: JSON.parse(JSON.stringify(G.DEFAULT_BINDS)),
+        padBinds: JSON.parse(JSON.stringify(G.pad.DEFAULT))       // gamepad button index (W3C standard mapping) per function, -1 = none
     };
     var SETTINGS_DEFAULT = JSON.stringify(G.settings);
     G.resetSettings = function () { G.settings = JSON.parse(SETTINGS_DEFAULT); G.applySettings(true); };
@@ -202,10 +203,12 @@
         var d = MyPC.load('settings', null);
         if (d && typeof d === 'object') for (var k in G.settings) if (d[k] !== undefined && d[k] !== null) {
             if (k === 'binds' && d.binds) { for (var b in G.settings.binds) if (BTN[d.binds[b]]) G.settings.binds[b] = d.binds[b]; }
+            else if (k === 'padBinds' && d.padBinds) { for (var pb in G.settings.padBinds) { var v = d.padBinds[pb]; if (typeof v === 'number' && v >= -1 && v < G.pad.size && v === Math.floor(v)) G.settings.padBinds[pb] = v; } }
             else if (k === 'gfx' && typeof d.gfx === 'object') { for (var g in G.settings.gfx) if (d.gfx[g] !== undefined) G.settings.gfx[g] = d.gfx[g]; }
             else if (typeof d[k] === typeof G.settings[k]) G.settings[k] = d[k];
         }
         if (G.settings.binds.interact === 'none') G.settings.binds.interact = 'ok';
+        if (G.settings.padBinds.interact < 0) G.settings.padBinds.interact = 0;
     };
     G.saveSettings = function () { try { MyPC.save('settings', G.settings); } catch (e) {} };
 })();

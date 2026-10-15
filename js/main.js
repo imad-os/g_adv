@@ -138,10 +138,40 @@
     /* ---------------- input ---------------- */
     var SDK = { ok: 'confirm', run: 'run', cancel: 'cancel', menu: 'menu' };
     var ORDER = ['interact', 'attack', 'jump', 'sprint', 'map', 'menu'];
+    var keyHeld = {};                                    // SDK actions held on the remote / keyboard / touch pad (not the gamepad)
+    var lastRaw = false;                                 // the last game press came from the gamepad read directly
     G.input = {
         dir: function (d) { return MyPC.isDown(d) ? 1 : 0; },
-        held: function (fn) { var b = G.binds[fn]; return !!(SDK[b] && MyPC.isDown(SDK[b])); }
+        held: function (fn) {
+            var b = G.binds[fn];
+            if (!G.pad.live) return !!(SDK[b] && MyPC.isDown(SDK[b]));
+            return G.pad.held(G.settings.padBinds[fn]) || !!(SDK[b] && keyHeld[SDK[b]]);
+        },
+        shared: function (a, b) {                        // two functions on the same button of the device in use
+            return lastRaw ? G.settings.padBinds[a] === G.settings.padBinds[b] : G.binds[a] === G.binds[b];
+        }
     };
+    function run(fn) {
+        if (fn === 'menu') { G.ui.openMenu(); return true; }
+        if (fn === 'map') { G.ui.openMenu('map'); return true; }
+        return G.player.onPress(fn);
+    }
+    function padPresses(wasLive) {                       // gamepad buttons read directly (L, R, ZL, ZR... too)
+        var pd = G.pad;
+        if (!pd.live || !wasLive) return;
+        if (G.ui.capturing()) { var k0 = pd.anyNew(); if (k0 >= 0) G.ui.padCapture(k0); return; }
+        if (!G.playing || G.ui.isOpen() || G.dead) return;
+        for (var k = 0; k < pd.size; k++) {
+            if (!pd.pressed(k)) continue;
+            lastRaw = true;
+            for (var i = 0; i < ORDER.length; i++) {
+                if (G.settings.padBinds[ORDER[i]] !== k) continue;
+                var used = run(ORDER[i]);
+                if (G.ui.isOpen()) pd.guard(k);
+                if (used) break;
+            }
+        }
+    }
     function button(action) {
         if (action === 'confirm') return 'ok';
         if (action === 'run') return 'run';
@@ -150,14 +180,20 @@
         return null;
     }
     function onInput(action, pressed, repeat, dev) {
+        var fromPad = !!dev && dev.indexOf('pad') === 0;
+        if (fromPad && pressed && !repeat && button(action)) G.pad.sdkPress();
+        if (fromPad && G.pad.live) {                     // the gamepad is read directly: its My PC actions only drive menus
+            if (G.pad.guarded()) return;
+            G.ui.input(action, pressed, repeat, dev);
+            return;
+        }
+        if (!fromPad) keyHeld[action] = pressed;
         if (G.ui.input(action, pressed, repeat, dev)) return;
         if (!pressed || repeat || !G.playing) return;
         var b = button(action); if (!b) return;
+        lastRaw = false;
         for (var i = 0; i < ORDER.length; i++) {
-            var fn = ORDER[i]; if (G.binds[fn] !== b) continue;
-            if (fn === 'menu') { G.ui.openMenu(); return; }
-            if (fn === 'map') { G.ui.openMenu('map'); return; }
-            if (G.player.onPress(fn)) return;
+            if (G.binds[ORDER[i]] === b && run(ORDER[i])) return;
         }
     }
 
@@ -299,6 +335,7 @@
     }
     function frame(ts) {
         raf = requestAnimationFrame(frame);
+        var wasLive = G.pad.live; G.pad.poll(); padPresses(wasLive);
         if (!last) last = ts;
         var el = Math.min(250, ts - last); last = ts;
         acc += el;
