@@ -82,6 +82,7 @@ html[dir="rtl"] .list li b { right: auto; left: 32px; }
 .list li.head { background: none; color: #ffd23f; font-size: 34px; padding: 10px 8px 0; border: none; }
 .list li.head small { color: #9aa6dd; }
 .list li.dim { color: #9aa3c8; }
+.list li.read small { font-size: 31px; line-height: 1.4; color: #e2e6ff; margin-top: 8px; }
 .list li.focus { border-color: #ffd23f; background: linear-gradient(90deg, #3b4fc4, #2c3a8c); transform: scale(1.02); box-shadow: 0 0 26px rgba(255,210,63,0.35); }
 .list li.focus .ic { color: #ffd23f; }
 .list li.wait { animation: waitp 0.9s infinite; }

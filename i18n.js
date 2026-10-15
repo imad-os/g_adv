@@ -507,3 +507,73 @@ Object.assign(window.TEXT.ary, {
     coop_version: 'صاحبك عندو نسخة أخرى من اللعبة', coop_with: 'لعب مع {0}', coop_joined: '{0} دخل للعالم ديالك!',
     coop_loot: 'غنيمة مقسومة', coop_reward: 'مكافأة مقسومة', coop_nohorse: 'فاللعب الجماعي العودان كيبقاو عند المضيف', coop_norest: 'غير المضيف اللي يقدر يرتاح'
 });
+
+/* 1.2.0: Settings > How to play */
+Object.assign(window.TEXT.en, {
+    sec_howto: 'How to play', sec_howto_sub: 'What the game is about, how to play and how to progress',
+    how_story_t: 'The story', how_story: 'You are Kael, woken in the village of Elmbrook. The Red Moon has woken the Warden, the old guardian of the Crown ruins, and Ardalia is falling into shadow. Light the beacons, clear the Grubber camps, help the villages and finally face the Warden.',
+    how_hero_t: 'Hearts, stamina, hunger', how_hero: 'Hearts are your life. The green wheel is stamina: running, climbing, gliding and swimming use it, and it refills when you rest a moment. The orange bar is hunger: eat to keep it up, because hearts only heal by themselves while you are well fed.',
+    how_explore_t: 'Exploring', how_explore: 'Climb any slope or wall, swim across lakes, and with the wind cloak hold OK in the air to glide. Hold ▲ to run. Places you find are marked on the map, and explored land clears the fog.',
+    how_beacons_t: 'Beacons and travel', how_beacons: 'Six beacon towers stand across the land. Climb one and light it at the top: the land around appears on your map and you can travel there from the map at any time. Villages and the stable are travel points too once you have found them.',
+    how_fight_t: 'Fighting', how_fight: 'Press OK near an enemy to strike. Every weapon breaks after a number of hits, so pick up the ones enemies drop and keep several. Grubbers notice you by sight and by noise: sneak, then strike first. Watch for the raised arm, it means a hit is coming.',
+    how_food_t: 'Food and cooking', how_food: 'Gather apples, mushrooms and herbs, and hunt for meat. Raw food heals a little; at a campfire you can cook up to three ingredients into roasted apples, herb tea (extra stamina) or stew (many hearts). Eat from Menu › Items.',
+    how_progress_t: 'How to progress', how_progress: 'Follow the main quests (◆ in Menu › Quests, ★ on the compass): eight of them lead to the Warden. Villagers also offer side quests with hearts, stamina and weapons as rewards. If you are lost, talk to Mira in Elmbrook: she always has a hint.',
+    how_orbs_t: 'Hollows and Spirit Orbs', how_orbs: 'Six glowing Hollows hide trials: catch all the light orbs before time runs out. Each one gives a Spirit Orb. Bring 4 orbs to Mira to get one more heart or more stamina. This is the best way to grow stronger.',
+    how_levels_t: 'Levels and camps', how_levels: 'Every fight, discovery and quest gives experience. Each level refills your hearts and every three levels your strikes hit harder. Clear a whole Grubber camp to open its chest for weapons, shards and an orb.',
+    how_world_t: 'Day, night, seasons, Red Moon', how_world: 'A day lasts about 24 minutes. Wolves hunt at night and Grubbers are sleepier. Seasons change every 3 days and bring rain or snow. Every 7th night the Red Moon rises: at its peak, defeated enemies, plants and chests all come back.',
+    how_coop_t: 'Playing together', how_coop: 'A friend can join from another My PC on the same Wi-Fi: Host a co-op game on the title, or Menu › System › Invite a friend. They bring their own hero and save, and both of you get every kill and quest reward.',
+    how_diff_t: 'Difficulty', how_diff: 'Wanderer is relaxed, Adventurer is the intended game, Champion is tougher, Legend is for experts: hearts only return through food. Change it any time in Settings › Gameplay.',
+    how_controls_t: 'Controls', how_controls: 'TV remote: arrows move and turn, OK talks, picks up, strikes and jumps, hold OK in the air to glide, hold OK while standing still to open the menu. A gamepad adds sprint, map and menu buttons; change them in Settings › Button mapping.',
+    how_tips_t: 'Tips', how_tips: 'Cook stew before a big fight. Keep a spare weapon. Rest at a village fire to skip the night. Whistle for your horse from Menu › System. The game saves by itself every minute, and you can keep your own save too.'
+});
+Object.assign(window.TEXT.fr, {
+    sec_howto: 'Comment jouer', sec_howto_sub: 'L\'histoire, le jeu et comment progresser',
+    how_story_t: 'L\'histoire', how_story: 'Vous êtes Kael, réveillé au village d\'Elmbrook. La Lune rouge a réveillé le Gardien, l\'ancien protecteur des ruines de la Couronne, et Ardalia sombre dans l\'ombre. Allumez les phares, videz les camps de Grubbers, aidez les villages et affrontez enfin le Gardien.',
+    how_hero_t: 'Cœurs, endurance, faim', how_hero: 'Les cœurs sont votre vie. La roue verte est l\'endurance : courir, grimper, planer et nager l\'utilisent, elle revient au repos. La barre orange est la faim : mangez, car les cœurs ne guérissent seuls que si vous êtes bien nourri.',
+    how_explore_t: 'Explorer', how_explore: 'Grimpez sur toute pente ou paroi, traversez les lacs à la nage, et avec la cape du vent maintenez OK en l\'air pour planer. Maintenez ▲ pour courir. Les lieux trouvés s\'affichent sur la carte.',
+    how_beacons_t: 'Phares et voyages', how_beacons: 'Six tours-phares se dressent dans le pays. Grimpez et allumez-en une au sommet : la région apparaît sur la carte et vous pouvez y voyager depuis la carte. Les villages et l\'écurie trouvés sont aussi des points de voyage.',
+    how_fight_t: 'Combattre', how_fight: 'OK près d\'un ennemi pour frapper. Chaque arme casse après un certain nombre de coups : ramassez celles des ennemis et gardez-en plusieurs. Les Grubbers vous repèrent à la vue et au bruit : approchez doucement et frappez le premier. Un bras levé annonce un coup.',
+    how_food_t: 'Nourriture et cuisine', how_food: 'Cueillez pommes, champignons et herbes, chassez pour la viande. Cru, cela soigne peu ; au feu de camp, cuisinez jusqu\'à trois ingrédients : pommes rôties, tisane (endurance) ou ragoût (beaucoup de cœurs). Mangez depuis Menu › Objets.',
+    how_progress_t: 'Comment progresser', how_progress: 'Suivez les quêtes principales (◆ dans Menu › Quêtes, ★ sur la boussole) : huit mènent au Gardien. Les villageois proposent des quêtes annexes avec cœurs, endurance et armes. Perdu ? Parlez à Mira à Elmbrook, elle a toujours un conseil.',
+    how_orbs_t: 'Creux et Orbes', how_orbs: 'Six Creux lumineux cachent des épreuves : attrapez tous les orbes avant la fin du temps. Chacune donne un Orbe d\'esprit. Apportez-en 4 à Mira pour un cœur de plus ou plus d\'endurance. C\'est le meilleur moyen de devenir plus fort.',
+    how_levels_t: 'Niveaux et camps', how_levels: 'Combats, découvertes et quêtes donnent de l\'expérience. Chaque niveau remplit vos cœurs et tous les trois niveaux vos coups sont plus forts. Videz un camp entier pour ouvrir son coffre : armes, éclats et un orbe.',
+    how_world_t: 'Jour, nuit, saisons, Lune rouge', how_world: 'Une journée dure environ 24 minutes. Les loups chassent la nuit et les Grubbers somnolent. Les saisons changent tous les 3 jours avec pluie ou neige. Chaque 7e nuit, la Lune rouge ramène ennemis, plantes et coffres.',
+    how_coop_t: 'Jouer ensemble', how_coop: 'Un ami peut rejoindre depuis un autre My PC sur le même Wi-Fi : Héberger une partie coop au titre, ou Menu › Système › Inviter un ami. Il garde son héros et sa sauvegarde, et vous gagnez tous les deux chaque récompense.',
+    how_diff_t: 'Difficulté', how_diff: 'Vagabond est détendu, Aventurier est le jeu prévu, Champion est plus dur, Légende est pour les experts : les cœurs ne reviennent qu\'en mangeant. Modifiable dans Réglages › Jeu.',
+    how_controls_t: 'Commandes', how_controls: 'Télécommande : flèches pour bouger et tourner, OK pour parler, ramasser, frapper et sauter, maintenir OK en l\'air pour planer, maintenir OK immobile pour le menu. Une manette ajoute sprint, carte et menu ; à changer dans Réglages › Configuration des boutons.',
+    how_tips_t: 'Astuces', how_tips: 'Cuisinez un ragoût avant un gros combat. Gardez une arme de rechange. Reposez-vous au feu d\'un village pour passer la nuit. Sifflez votre cheval depuis Menu › Système. Le jeu se sauvegarde seul chaque minute.'
+});
+Object.assign(window.TEXT.ar, {
+    sec_howto: 'طريقة اللعب', sec_howto_sub: 'عن اللعبة وطريقة اللعب وكيف تتقدم',
+    how_story_t: 'القصة', how_story: 'أنت كايل، استيقظت في قرية إلمبروك. أيقظ القمر الأحمر الحارس، حامي أطلال التاج القديم، وأرداليا تغرق في الظلام. أشعل المنارات، طهّر معسكرات الغرابير، ساعد القرى ثم واجه الحارس.',
+    how_hero_t: 'القلوب والتحمل والجوع', how_hero: 'القلوب هي حياتك. الدائرة الخضراء هي التحمل: الركض والتسلق والطيران والسباحة تستهلكه ويعود عند الراحة. الشريط البرتقالي هو الجوع: كُل، لأن القلوب لا تشفى وحدها إلا وأنت شبعان.',
+    how_explore_t: 'الاستكشاف', how_explore: 'تسلّق أي منحدر أو جدار، اسبح عبر البحيرات، ومع عباءة الريح اضغط OK مطولاً في الهواء لتطير. اضغط ▲ مطولاً للركض. الأماكن التي تجدها تظهر على الخريطة.',
+    how_beacons_t: 'المنارات والسفر', how_beacons: 'ست منارات في أنحاء البلاد. تسلّق واحدة وأشعلها في القمة: تظهر المنطقة على خريطتك ويمكنك السفر إليها من الخريطة. القرى والإسطبل نقاط سفر أيضاً بعد اكتشافها.',
+    how_fight_t: 'القتال', how_fight: 'اضغط OK قرب عدو لتضرب. كل سلاح ينكسر بعد عدد من الضربات، فالتقط أسلحة الأعداء واحتفظ بعدة أسلحة. الغرابير يلاحظونك بالنظر والصوت: اقترب بهدوء واضرب أولاً. الذراع المرفوعة تعني ضربة قادمة.',
+    how_food_t: 'الطعام والطبخ', how_food: 'اجمع التفاح والفطر والأعشاب واصطد اللحم. الطعام النيء يشفي قليلاً؛ عند نار المخيم اطبخ حتى ثلاثة مكونات: تفاح مشوي، شاي أعشاب (تحمل) أو يخنة (قلوب كثيرة). كُل من القائمة › الأغراض.',
+    how_progress_t: 'كيف تتقدم', how_progress: 'اتبع المهام الرئيسية (◆ في القائمة › المهام، ★ على البوصلة): ثماني مهام تقود إلى الحارس. يعرض القرويون مهاماً جانبية بمكافآت من قلوب وتحمل وأسلحة. إذا تهت، تحدث إلى ميرا في إلمبروك.',
+    how_orbs_t: 'الكهوف وكرات الروح', how_orbs: 'ست كهوف مضيئة تخفي تحديات: التقط كل كرات الضوء قبل نهاية الوقت. كل تحدٍّ يعطيك كرة روح. أحضر 4 كرات إلى ميرا لتحصل على قلب إضافي أو تحمل أكثر.',
+    how_levels_t: 'المستويات والمعسكرات', how_levels: 'كل قتال واكتشاف ومهمة يعطيك خبرة. كل مستوى يملأ قلوبك وكل ثلاثة مستويات تصبح ضرباتك أقوى. طهّر معسكراً كاملاً لتفتح صندوقه: أسلحة وشظايا وكرة.',
+    how_world_t: 'الليل والنهار والفصول والقمر الأحمر', how_world: 'اليوم يدوم حوالي 24 دقيقة. الذئاب تصطاد ليلاً والغرابير ينعسون. تتغير الفصول كل 3 أيام مع مطر أو ثلج. كل ليلة سابعة يعيد القمر الأحمر الأعداء والنباتات والصناديق.',
+    how_coop_t: 'اللعب معاً', how_coop: 'يمكن لصديق الانضمام من جهاز My PC آخر على نفس الشبكة: استضف لعبة جماعية من البداية أو القائمة › النظام › ادعُ صديقاً. يحتفظ ببطله وحفظه، وكلاكما يحصل على كل مكافأة.',
+    how_diff_t: 'الصعوبة', how_diff: 'الرحّالة هادئة، المغامر هي اللعبة كما صُممت، البطل أصعب، والأسطورة للخبراء: القلوب لا تعود إلا بالطعام. غيّرها من الإعدادات › اللعب.',
+    how_controls_t: 'التحكم', how_controls: 'جهاز التحكم: الأسهم للحركة والدوران، OK للتحدث والالتقاط والضرب والقفز، OK مطولاً في الهواء للطيران، ومطولاً وأنت واقف لفتح القائمة. يد التحكم تضيف أزرار الركض والخريطة والقائمة؛ غيّرها من الإعدادات › تعيين الأزرار.',
+    how_tips_t: 'نصائح', how_tips: 'اطبخ يخنة قبل معركة كبيرة. احتفظ بسلاح احتياطي. استرح عند نار القرية لتتجاوز الليل. نادِ حصانك من القائمة › النظام. اللعبة تحفظ نفسها كل دقيقة.'
+});
+Object.assign(window.TEXT.ary, {
+    sec_howto: 'كيفاش تلعب', sec_howto_sub: 'على اللعبة، كيفاش تلعب وكيفاش تزيد لقدام',
+    how_story_t: 'القصة', how_story: 'نتا كايل، فقتي فدوار إلمبروك. القمرة الحمرا فيقات الحارس، اللي كان كيحمي خرابي التاج، وأرداليا كتغرق فالضلام. شعل المنارات، نقي مخيمات الغرابير، عاون الدواور ومن بعد واجه الحارس.',
+    how_hero_t: 'القلوب، النفس والجوع', how_hero: 'القلوب هوما الحياة ديالك. الدايرة الخضرا هي النفس: الجري والطلوع والطيران والعومان كياكلوه، وكيرجع ملي ترتاح. الخط البرتقالي هو الجوع: كول، حيت القلوب ما كيبراوش بوحدهم غير إلا كنتي شبعان.',
+    how_explore_t: 'التسارية', how_explore: 'طلع أي طلعة ولا حيط، عوم فالضايات، وبالسلهام ديال الريح شد OK فالسما باش تطير. شد ▲ باش تجري. البلايص اللي لقيتي كيبانو فالخريطة.',
+    how_beacons_t: 'المنارات والسفر', how_beacons: 'كاينين ست منارات فالبلاد. طلع لوحدة وشعلها لفوق: كتبان المنطقة فالخريطة وتقدر تسافر ليها من الخريطة. الدواور والإسطبل حتى هوما بلايص للسفر ملي تلقاهم.',
+    how_fight_t: 'القتال', how_fight: 'ورك OK حدا شي عدو باش تضرب. كل سلاح كيتهرس من بعد شحال من ضربة، هز السلاح ديال العديان وخلي عندك بزاف. الغرابير كيشوفوك وكيسمعوك: قرب بشوية وضرب نتا الأول. اليد المرفوعة معناها ضربة جاية.',
+    how_food_t: 'الماكلة والطياب', how_food: 'جمع التفاح والفقاع والعشوب وصيد اللحم. الماكلة النية كتبري شوية؛ عند العافية طيب حتى تلاتة ديال الحوايج: تفاح مشوي، أتاي بالعشوب (نفس) ولا مرقة (قلوب بزاف). كول من المونيو › الحوايج.',
+    how_progress_t: 'كيفاش تزيد لقدام', how_progress: 'تبع المهمات الكبار (◆ فالمونيو › المهمات، ★ فالبوصلة): تمنية ديالهم كيوصلوك للحارس. الناس كيعطيوك مهمات صغار فيهم قلوب ونفس وسلاح. إلا تلفتي، هضر مع ميرا فإلمبروك.',
+    how_orbs_t: 'الكهوف وكرات الروح', how_orbs: 'ست كهوف مضويين فيهم تحديات: شد كاع كرات الضو قبل ما يسالي الوقت. كل تحدي كيعطيك كرة روح. جيب 4 لميرا وخود قلب زايد ولا نفس كثر.',
+    how_levels_t: 'المستويات والمخيمات', how_levels: 'كل قتال ولقية ومهمة كيعطيوك الخبرة. كل مستوى كيعمر القلوب، وكل تلاتة مستويات كتولي الضربة ديالك قاصحة. نقي مخيم كامل باش تحل الصندوق: سلاح وشقفات وكرة.',
+    how_world_t: 'النهار، الليل، الفصول والقمرة الحمرا', how_world: 'النهار كيدوم تقريبا 24 دقيقة. الديابة كيصيدو فالليل والغرابير كيناعسو. الفصول كيتبدلو كل 3 أيام مع الشتا ولا التلج. كل ليلة سابعة القمرة الحمرا كترجع العديان والنبات والصناديق.',
+    how_coop_t: 'اللعب مع صاحبك', how_coop: 'صاحبك يقدر يدخل من My PC آخر فنفس الويفي: استضيف لعبة مع صاحبك فالبداية، ولا المونيو › النظام › عيط على صاحبك. كيجيب البطل والحفظ ديالو، وبجوج كتاخدو كل مكافأة.',
+    how_diff_t: 'الصعوبة', how_diff: 'الرحّال ساهلة، المغامر هي اللعبة كيف تصاوبات، البطل صعيبة، والأسطورة للمحترفين: القلوب ما كترجعش غير بالماكلة. بدلها من الإعدادات › اللعب.',
+    how_controls_t: 'التحكم', how_controls: 'التيليكوموند: الفليشات باش تمشي وتدور، OK باش تهضر وتهز وتضرب وتنقز، شد OK فالسما باش تطير، وشدو وانت واقف باش تحل المونيو. المانيطة فيها بوطونات زايدين للجري والخريطة والمونيو؛ بدلهم من الإعدادات › ترتيب البوطونات.',
+    how_tips_t: 'نصائح', how_tips: 'طيب مرقة قبل شي قتال كبير. خلي سلاح احتياطي. ارتاح عند عافية الدوار باش تفوت الليل. صفر لعودك من المونيو › النظام. اللعبة كتحفظ راسها كل دقيقة.'
+});

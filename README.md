@@ -23,6 +23,7 @@ Shift = sprint, Backspace = map, Esc pauses.
 - Co-op for two over My PC multiplayer (same Wi-Fi, any two My PC devices): Title → Host a co-op game / Join a friend, or
   in game Menu → System → Invite a friend. The guest plays their own hero from their own save in the host's world;
   enemies attack the nearest player; every kill and every host quest reward is shared. Names are the My PC profile names.
+- Settings › How to play: the story, gameplay and how to progress, in every language.
 - Settings in six sections: Graphics (quality Auto/Low/Medium/High from My PC's tier, view distance, grass, shadows,
   render resolution, FPS counter), Gameplay, Camera (distance, height, field of view, shake), Audio, Interface (HUD size,
   clock, FPS) and Button mapping: press OK on an action, then press the button you want (detected, 6 s, ◀ ▶ = no button).

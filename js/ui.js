@@ -344,8 +344,9 @@
         }
     }
     /* ---------------- settings: sections, each option changes with ◀ ▶ ---------------- */
-    var SECTIONS = ['graphics', 'gameplay', 'camera', 'audio', 'interface', 'controls'];
-    var SEC_ICON = { graphics: '◩', gameplay: '⚔', camera: '◎', audio: '♫', interface: '▣', controls: '✜' };
+    var SECTIONS = ['howto', 'graphics', 'gameplay', 'camera', 'audio', 'interface', 'controls'];
+    var HOWTO = ['story', 'hero', 'explore', 'beacons', 'fight', 'food', 'progress', 'orbs', 'levels', 'world', 'coop', 'diff', 'controls', 'tips'];
+    var SEC_ICON = { howto: '❖', graphics: '◩', gameplay: '⚔', camera: '◎', audio: '♫', interface: '▣', controls: '✜' };
     var FNS = ['interact', 'attack', 'jump', 'sprint', 'map', 'menu'];
     function cycle(list, cur, d) { var i = list.indexOf(cur); if (i < 0) i = 0; i = (i + d + list.length) % list.length; return list[i]; }
     function opt(s, label, list, get, set, show, sub, rebuild) {
@@ -371,6 +372,9 @@
         }
         s.items.push({ label: SEC_ICON[s.sub] + '  ' + G.t('sec_' + s.sub), head: true, sub: G.t('sec_' + s.sub + '_sub') });
         if (s.sub === 'controls') buildControls(s);
+        else if (s.sub === 'howto') {                       // a guide to read: every paragraph is a row ▲ ▼ moves through
+            for (var h = 0; h < HOWTO.length; h++) s.items.push({ label: G.t('how_' + HOWTO[h] + '_t'), sub: G.t('how_' + HOWTO[h]), on: null, cls: 'read' });
+        }
         else if (s.sub === 'graphics') {
             var Q = ['', 'low', 'medium', 'high'];
             opt(s, 'set_quality', Q, function () { return st.quality; }, function (v) { st.quality = v; },

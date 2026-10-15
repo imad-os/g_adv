@@ -6,7 +6,7 @@
   "type": "game",
   "entry": "index.html",
   "icon": "icon.svg",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "scores": false,
   "config": { "dayMinutes": 24, "voice": true, "voiceBase": "voices/", "voiceTimeoutMs": 1000, "difficulty": "adventurer", "quality": "", "lang": "" }
 }

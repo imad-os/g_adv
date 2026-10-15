@@ -2,7 +2,7 @@
 (function () {
     'use strict';
     var G = window.G;
-    G.VERSION = '1.1.0';                       // keep equal to mypc-app.json "version" (used for ?v= on code-loaded files)
+    G.VERSION = '1.2.0';                       // keep equal to mypc-app.json "version" (used for ?v= on code-loaded files)
     G.CHUNK = 64;                              // metres per terrain chunk
     G.WORLD = 1536;                            // world is WORLD x WORLD metres, centred on 0,0
     G.SEA = 0;                                 // water level

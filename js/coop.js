@@ -19,7 +19,7 @@
 
     function num(v, lo, hi) { return typeof v === 'number' && isFinite(v) && v >= lo && v <= hi; }
     function cleanName(n) { n = typeof n === 'string' ? n.replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 24) : ''; return n || G.t('friend'); }
-    C.supported = function () { return !!(window.MyPC && MyPC.multiplayer && MyPC.multiplayer.supported); };
+    C.supported = function () { return !!(window.MyPC && MyPC.apiLevel >= 3 && MyPC.multiplayer && MyPC.multiplayer.supported); };
     C.myName = function () { return G.profileName || G.t('player'); };
     C.active = function () { return !!(peer && C.partner && C.partner.ready); };
 

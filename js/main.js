@@ -329,7 +329,9 @@
             G.voice.lang = window.TEXT[lang] ? lang : 'en';
             document.title = G.t('title');
             MyPC.progress(0.2);
+            var first = !MyPC.load('settings', null);
             G.loadSettings(); G.binds = G.settings.binds;
+            if (first && i.quality && i.quality.tier === 'low') G.settings.shake = false;   // the guide: no screen shake on low-tier TVs
             try {
                 renderer = new T.WebGLRenderer({ canvas: document.getElementById('gl'), antialias: false, powerPreference: 'high-performance', alpha: false });
             } catch (e) { MyPC.fail('WebGL'); return; }
