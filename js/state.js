@@ -17,7 +17,7 @@
             x: -6, y: 14, z: 60, ry: Math.PI / 2,       // spawn at Elmbrook, facing north (-z)
             safeX: -6, safeZ: 60,
             hearts: G.cfg.startHearts, maxHearts: G.cfg.startHearts,
-            stamina: 1, maxStamina: 1,                   // in wheels (1 wheel = 100 units)
+            stamina: 1, maxStamina: 1,                   // in wheels (1 wheel = G.STAMINA_UNITS units)
             hunger: 80,
             xp: 0, level: 1,
             inv: {},                                     // item id -> count (non-weapons)

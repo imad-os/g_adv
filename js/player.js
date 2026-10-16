@@ -63,7 +63,7 @@
         P.pos.x = Math.max(-lim, Math.min(lim, push.x)); P.pos.z = Math.max(-lim, Math.min(lim, push.z));
     }
     function useStamina(units) {                       // returns false when out
-        S.stamina -= units / 100; staminaCd = 0.7;
+        S.stamina -= units / G.STAMINA_UNITS; staminaCd = 0.7;
         if (S.stamina <= 0) { S.stamina = 0; exhausted = true; return false; }
         return true;
     }

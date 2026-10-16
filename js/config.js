@@ -2,7 +2,7 @@
 (function () {
     'use strict';
     var G = window.G;
-    G.VERSION = '1.3.0';                       // keep equal to mypc-app.json "version" (used for ?v= on code-loaded files)
+    G.VERSION = '1.4.0';                       // keep equal to mypc-app.json "version" (used for ?v= on code-loaded files)
     G.CHUNK = 64;                              // metres per terrain chunk
     G.WORLD = 1536;                            // world is WORLD x WORLD metres, centred on 0,0
     G.SEA = 0;                                 // water level
@@ -39,6 +39,10 @@
         var d = G.cfg.difficulty;
         if (!G.DIFFS[d]) G.cfg.difficulty = G.DIFF_IDS[Math.max(0, Math.min(3, Math.round(+d) || 1))];
     };
+
+    /* Stamina units in one wheel. Doubled in 1.4.0 (was 100) so a full wheel climbs a whole beacon tower;
+     * saves and upgrades are counted in wheels, so they all get twice the stamina too. */
+    G.STAMINA_UNITS = 200;
 
     /* Four difficulties. Every number multiplies the normal game ('adventurer' = all 1). */
     G.DIFF_IDS = ['wanderer', 'adventurer', 'champion', 'legend'];
